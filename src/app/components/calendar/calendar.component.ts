@@ -31,53 +31,65 @@ import { CommonModule } from '@angular/common';
       </div>
 
       <!-- Month View -->
-      <div *ngIf="viewMode() === 'month'" class="calendar-grid">
-        <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
-        <div *ngFor="let date of calendarDates()" class="calendar-date">
-          <button
-            (click)="selectDate(date)"
-            [class.other-month]="date.getMonth() !== currentDate().getMonth()"
-            [class.selected]="isSelectedDate(date)"
-            [class.today]="isToday(date)"
-            class="date-btn"
-          >
-            {{ date.getDate() }}
-          </button>
+      @if (viewMode() === 'month') {
+        <div class="calendar-grid">
+          @for (day of weekDays; track day) {
+            <div class="weekday">{{ day }}</div>
+          }
+          @for (date of calendarDates(); track date.getTime()) {
+            <div class="calendar-date">
+              <button
+                (click)="selectDate(date)"
+                [class.other-month]="date.getMonth() !== currentDate().getMonth()"
+                [class.selected]="isSelectedDate(date)"
+                [class.today]="isToday(date)"
+                class="date-btn"
+              >
+                {{ date.getDate() }}
+              </button>
+            </div>
+          }
         </div>
-      </div>
+      }
 
       <!-- Week View -->
-      <div *ngIf="viewMode() === 'week'" class="week-view">
-        <div class="week-navigation">
-          <button (click)="previousWeek()" class="nav-btn">← Zurück</button>
-          <span class="week-range">{{ getWeekRange() }}</span>
-          <button (click)="nextWeek()" class="nav-btn">Weiter →</button>
-        </div>
+      @if (viewMode() === 'week') {
+        <div class="week-view">
+          <div class="week-navigation">
+            <button (click)="previousWeek()" class="nav-btn">← Zurück</button>
+            <span class="week-range">{{ getWeekRange() }}</span>
+            <button (click)="nextWeek()" class="nav-btn">Weiter →</button>
+          </div>
 
-        <div class="week-grid">
-          <div *ngFor="let date of weekDates()" class="week-day">
-            <button
-              (click)="selectDate(date)"
-              [class.selected]="isSelectedDate(date)"
-              [class.today]="isToday(date)"
-              class="week-date-btn"
-            >
-              <div class="weekday-name">{{ getWeekDayName(date) }}</div>
-              <div class="date">{{ date.getDate() }}</div>
-            </button>
+          <div class="week-grid">
+            @for (date of weekDates(); track date.getTime()) {
+              <div class="week-day">
+                <button
+                  (click)="selectDate(date)"
+                  [class.selected]="isSelectedDate(date)"
+                  [class.today]="isToday(date)"
+                  class="week-date-btn"
+                >
+                  <div class="weekday-name">{{ getWeekDayName(date) }}</div>
+                  <div class="date">{{ date.getDate() }}</div>
+                </button>
+              </div>
+            }
           </div>
         </div>
-      </div>
+      }
 
-      <div *ngIf="selectedDate()" class="selected-date-display">
-        <p>
-          Ausgewählter Tag:
-          <strong>{{ formatDate(selectedDate()!) }}</strong>
-        </p>
-        <button (click)="viewDetails()" class="btn btn-primary">
-          📊 Details anzeigen
-        </button>
-      </div>
+      @if (selectedDate()) {
+        <div class="selected-date-display">
+          <p>
+            Ausgewählter Tag:
+            <strong>{{ formatDate(selectedDate()!) }}</strong>
+          </p>
+          <button (click)="viewDetails()" class="btn btn-primary">
+            📊 Details anzeigen
+          </button>
+        </div>
+      }
     </div>
   `,
   styles: `

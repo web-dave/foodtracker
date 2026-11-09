@@ -44,119 +44,122 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
       </div>
 
       <!-- Camera Mode -->
-      <div *ngIf="mode() === 'camera'" class="capture-section">
-        <video
-          #videoElement
-          class="video-preview"
-          autoplay
-          playsinline
-        ></video>
-        <div class="button-group">
-          <button (click)="initCamera()" class="btn btn-primary">
-            Kamera starten
-          </button>
-          <button
-            *ngIf="cameraActive()"
-            (click)="capturePhoto()"
-            class="btn btn-success"
-          >
-            📷 Foto aufnehmen
-          </button>
-          <button
-            *ngIf="cameraActive()"
-            (click)="stopCamera()"
-            class="btn btn-secondary"
-          >
-            Stoppen
-          </button>
+      @if (mode() === 'camera') {
+        <div class="capture-section">
+          <video
+            #videoElement
+            class="video-preview"
+            autoplay
+            playsinline
+          ></video>
+          <div class="button-group">
+            <button (click)="initCamera()" class="btn btn-primary">
+              Kamera starten
+            </button>
+            @if (cameraActive()) {
+              <button (click)="capturePhoto()" class="btn btn-success">
+                📷 Foto aufnehmen
+              </button>
+              <button (click)="stopCamera()" class="btn btn-secondary">
+                Stoppen
+              </button>
+            }
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Upload Mode -->
-      <div *ngIf="mode() === 'upload'" class="capture-section">
-        <input
-          #fileInput
-          type="file"
-          accept="image/*"
-          (change)="onFileSelected($event)"
-          class="file-input"
-        />
-        <label for="fileInput" class="file-label">
-          📁 Wählen Sie ein Bild aus
-        </label>
-      </div>
+      @if (mode() === 'upload') {
+        <div class="capture-section">
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            (change)="onFileSelected($event)"
+            class="file-input"
+          />
+          <label for="fileInput" class="file-label">
+            📁 Wählen Sie ein Bild aus
+          </label>
+        </div>
+      }
 
       <!-- Photo Preview & Description -->
-      <div *ngIf="capturedImage()" class="preview-section">
-        <img [src]="capturedImage()" class="preview-image" />
+      @if (capturedImage()) {
+        <div class="preview-section">
+          <img [src]="capturedImage()" class="preview-image" />
 
-        <div class="description-form">
+          <div class="description-form">
+            <label>
+              Beschreibung (optional):
+              <input
+                v-model="description"
+                [(ngModel)]="description"
+                type="text"
+                placeholder="z.B. Salat mit Hühnchen"
+                class="input-field"
+              />
+            </label>
+
+            <div class="button-group">
+              <button
+                (click)="analyze()"
+                [disabled]="isAnalyzing()"
+                class="btn btn-primary"
+              >
+                {{ isAnalyzing() ? 'Analysiere...' : '🤖 Mit KI analysieren' }}
+              </button>
+              <button
+                (click)="submitFood()"
+                [disabled]="isAnalyzing()"
+                class="btn btn-success"
+              >
+                {{ isAnalyzing() ? 'Bitte warten...' : '✅ Speichern' }}
+              </button>
+              <button (click)="clearCapture()" class="btn btn-secondary">
+                ❌ Verwerfen
+              </button>
+            </div>
+          </div>
+
+          @if (nutrition()) {
+            <div class="nutrition-preview">
+              <h3>Geschätzte Nährwerte</h3>
+              <div class="nutrition-grid">
+                <div class="nutrition-item">
+                  <div class="label">Kalorien</div>
+                  <div class="value">{{ nutrition().calories }} kcal</div>
+                </div>
+                <div class="nutrition-item">
+                  <div class="label">Protein</div>
+                  <div class="value">{{ nutrition().protein }}g</div>
+                </div>
+                <div class="nutrition-item">
+                  <div class="label">Kohlenhydrate</div>
+                  <div class="value">{{ nutrition().carbs }}g</div>
+                </div>
+                <div class="nutrition-item">
+                  <div class="label">Fett</div>
+                  <div class="value">{{ nutrition().fat }}g</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Manual Entry -->
+      @if (mode() === 'manual') {
+        <div class="manual-section">
           <label>
-            Beschreibung (optional):
+            Beschreibung:
             <input
-              v-model="description"
               [(ngModel)]="description"
               type="text"
-              placeholder="z.B. Salat mit Hühnchen"
+              placeholder="Was haben Sie gegessen?"
               class="input-field"
             />
           </label>
-
-          <div class="button-group">
-            <button
-              (click)="analyze()"
-              [disabled]="isAnalyzing()"
-              class="btn btn-primary"
-            >
-              {{ isAnalyzing() ? 'Analysiere...' : '🤖 Mit KI analysieren' }}
-            </button>
-            <button
-              (click)="submitFood()"
-              [disabled]="isAnalyzing()"
-              class="btn btn-success"
-            >
-              {{ isAnalyzing() ? 'Bitte warten...' : '✅ Speichern' }}
-            </button>
-            <button (click)="clearCapture()" class="btn btn-secondary">
-              ❌ Verwerfen
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="nutrition()" class="nutrition-preview">
-          <h3>Geschätzte Nährwerte</h3>
-          <div class="nutrition-grid">
-            <div class="nutrition-item">
-              <div class="label">Kalorien</div>
-              <div class="value">{{ nutrition().calories }} kcal</div>
-            </div>
-            <div class="nutrition-item">
-              <div class="label">Protein</div>
-              <div class="value">{{ nutrition().protein }}g</div>
-            </div>
-            <div class="nutrition-item">
-              <div class="label">Kohlenhydrate</div>
-              <div class="value">{{ nutrition().carbs }}g</div>
-            </div>
-            <div class="nutrition-item">
-              <div class="label">Fett</div>
-              <div class="value">{{ nutrition().fat }}g</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Manual Entry -->
-      <div *ngIf="mode() === 'manual'" class="manual-section">
-        <label>
-          Beschreibung:
-          <input
-            [(ngModel)]="description"
-            type="text"
-            placeholder="Was haben Sie gegessen?"
-            class="input-field"
-          />
-        </label>
 
         <button
           (click)="submitFood()"
@@ -165,7 +168,8 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
         >
           ✅ Speichern
         </button>
-      </div>
+        </div>
+      }
     </div>
   `,
   styles: `

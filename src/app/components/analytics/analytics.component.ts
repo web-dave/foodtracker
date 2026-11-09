@@ -14,14 +14,15 @@ import { Entry } from '../../models/entries';
 
       <!-- Period Selection -->
       <div class="period-selector">
-        <button
-          *ngFor="let period of periodOptions"
-          (click)="setPeriod(period)"
-          [class.active]="selectedPeriod() === period"
-          class="period-btn"
-        >
-          {{ getPeriodLabel(period) }}
-        </button>
+        @for (period of periodOptions; track period) {
+          <button
+            (click)="setPeriod(period)"
+            [class.active]="selectedPeriod() === period"
+            class="period-btn"
+          >
+            {{ getPeriodLabel(period) }}
+          </button>
+        }
       </div>
 
       <!-- Nutrition Summary -->
@@ -54,62 +55,72 @@ import { Entry } from '../../models/entries';
       <!-- Weight Tracking -->
       <div class="section">
         <h2>⚖️ Gewichtsverlauf</h2>
-        <div *ngIf="weightCount() === 0" class="empty-state">
-          <p>Keine Gewichtsmessungen für diesen Zeitraum</p>
-        </div>
-        <div *ngIf="weightCount() > 0" class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Aktuelle Messung</div>
-            <div class="stat-value">{{ getLatestWeight() }}</div>
-            <div class="stat-unit">kg</div>
+        @if (weightCount() === 0) {
+          <div class="empty-state">
+            <p>Keine Gewichtsmessungen für diesen Zeitraum</p>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Durchschnitt</div>
-            <div class="stat-value">{{ getAverageWeight() }}</div>
-            <div class="stat-unit">kg</div>
+        }
+        @if (weightCount() > 0) {
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Aktuelle Messung</div>
+              <div class="stat-value">{{ getLatestWeight() }}</div>
+              <div class="stat-unit">kg</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Durchschnitt</div>
+              <div class="stat-value">{{ getAverageWeight() }}</div>
+              <div class="stat-unit">kg</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Unterschied</div>
+              <div class="stat-value">{{ getWeightDifference() }}</div>
+              <div class="stat-unit">kg</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Unterschied</div>
-            <div class="stat-value">{{ getWeightDifference() }}</div>
-            <div class="stat-unit">kg</div>
-          </div>
-        </div>
+        }
       </div>
 
       <!-- Sport Tracking -->
       <div class="section">
         <h2>🏃 Sportaktivitäten</h2>
-        <div *ngIf="sportCount() === 0" class="empty-state">
-          <p>Keine Sportaktivitäten für diesen Zeitraum</p>
-        </div>
-        <div *ngIf="sportCount() > 0" class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Aktivitäten</div>
-            <div class="stat-value">{{ sportCount() }}</div>
-            <div class="stat-unit">Trainings</div>
+        @if (sportCount() === 0) {
+          <div class="empty-state">
+            <p>Keine Sportaktivitäten für diesen Zeitraum</p>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Gesamtdauer</div>
-            <div class="stat-value">{{ getTotalSportDuration() }}</div>
-            <div class="stat-unit">Min</div>
+        }
+        @if (sportCount() > 0) {
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Aktivitäten</div>
+              <div class="stat-value">{{ sportCount() }}</div>
+              <div class="stat-unit">Trainings</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Gesamtdauer</div>
+              <div class="stat-value">{{ getTotalSportDuration() }}</div>
+              <div class="stat-unit">Min</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Kalorien</div>
+              <div class="stat-value">{{ getTotalCaloriesBurned() }}</div>
+              <div class="stat-unit">kcal</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Kalorien</div>
-            <div class="stat-value">{{ getTotalCaloriesBurned() }}</div>
-            <div class="stat-unit">kcal</div>
-          </div>
-        </div>
+        }
       </div>
 
       <!-- Food Log -->
       <div class="section">
         <h2>🍽️ Lebensmittelprotokoll</h2>
-        <div *ngIf="foodCount() === 0" class="empty-state">
-          <p>Keine Lebensmitteleinträge für diesen Zeitraum</p>
-        </div>
-        <div *ngIf="foodCount() > 0">
+        @if (foodCount() === 0) {
+          <div class="empty-state">
+            <p>Keine Lebensmitteleinträge für diesen Zeitraum</p>
+          </div>
+        }
+        @if (foodCount() > 0) {
           <p>{{ foodCount() }} Lebensmitteleinträge in diesem Zeitraum</p>
-        </div>
+        }
       </div>
     </div>
   `,

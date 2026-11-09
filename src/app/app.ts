@@ -8,13 +8,7 @@ import { AnalyticsComponent } from './components/analytics/analytics.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    CommonModule,
-    CopilotChat,
-    TimelineComponent,
-    CalendarComponent,
-    AnalyticsComponent,
-  ],
+  imports: [CommonModule, CopilotChat, TimelineComponent, CalendarComponent, AnalyticsComponent],
   template: `
     <div class="app-container">
       <header class="app-header">
@@ -45,12 +39,16 @@ import { AnalyticsComponent } from './components/analytics/analytics.component';
       </header>
 
       <main class="app-main">
-        <app-timeline *ngIf="currentView() === 'timeline'" />
-        <app-calendar *ngIf="currentView() === 'calendar'" />
-        <app-analytics *ngIf="currentView() === 'analytics'" />
+        @if (currentView() === 'timeline') {
+          <app-timeline />
+        }
+        @if (currentView() === 'calendar') {
+          <app-calendar />
+        }
+        @if (currentView() === 'analytics') {
+          <app-analytics />
+        }
       </main>
-
-      <copilot-chat />
     </div>
   `,
   styles: `

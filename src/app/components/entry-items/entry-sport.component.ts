@@ -21,14 +21,18 @@ import { CommonModule } from '@angular/common';
           <span>Intensität:</span>
           <strong>{{ entry().intensity }}</strong>
         </div>
-        <div *ngIf="entry().caloriesBurned" class="detail">
-          <span>Verbrannte Kalorien:</span>
-          <strong>{{ entry().caloriesBurned }} kcal</strong>
+        @if (entry().caloriesBurned) {
+          <div class="detail">
+            <span>Verbrannte Kalorien:</span>
+            <strong>{{ entry().caloriesBurned }} kcal</strong>
+          </div>
+        }
+      </div>
+      @if (entry().notes) {
+        <div class="notes">
+          {{ entry().notes }}
         </div>
-      </div>
-      <div *ngIf="entry().notes" class="notes">
-        {{ entry().notes }}
-      </div>
+      }
     </div>
   `,
   styles: `

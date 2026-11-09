@@ -32,28 +32,29 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
       </div>
 
       <div class="timeline-entries">
-        <div *ngIf="todayEntries().length === 0" class="empty-state">
-          <p>Noch keine Einträge für heute</p>
-        </div>
+        @if (todayEntries().length === 0) {
+          <div class="empty-state">
+            <p>Noch keine Einträge für heute</p>
+          </div>
+        }
 
-        <div *ngFor="let entry of todayEntries()" class="timeline-entry">
-          <div class="entry-time">{{ getFormattedTime(entry.timestamp) }}</div>
+        @for (entry of todayEntries(); track entry.id) {
+          <div class="timeline-entry">
+            <div class="entry-time">{{ getFormattedTime(entry.timestamp) }}</div>
 
-          <app-entry-food
-            *ngIf="entry.type === 'food'"
-            [entry]="castToFoodEntry(entry)"
-          />
-          <app-entry-weight
-            *ngIf="entry.type === 'weight'"
-            [entry]="castToWeightEntry(entry)"
-          />
-          <app-entry-sport
-            *ngIf="entry.type === 'sport'"
-            [entry]="castToSportEntry(entry)"
-          />
+            @if (entry.type === 'food') {
+              <app-entry-food [entry]="castToFoodEntry(entry)" />
+            }
+            @if (entry.type === 'weight') {
+              <app-entry-weight [entry]="castToWeightEntry(entry)" />
+            }
+            @if (entry.type === 'sport') {
+              <app-entry-sport [entry]="castToSportEntry(entry)" />
+            }
 
-          <button class="delete-btn" (click)="deleteEntry(entry.id)">×</button>
-        </div>
+            <button class="delete-btn" (click)="deleteEntry(entry.id)">×</button>
+          </div>
+        }
       </div>
     </div>
   `,

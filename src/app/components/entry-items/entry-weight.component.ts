@@ -12,9 +12,11 @@ import { CommonModule } from '@angular/common';
         <span class="icon">⚖️</span>
         <span class="weight">{{ entry().weight }} {{ entry().unit }}</span>
       </div>
-      <div *ngIf="entry().notes" class="notes">
-        {{ entry().notes }}
-      </div>
+      @if (entry().notes) {
+        <div class="notes">
+          {{ entry().notes }}
+        </div>
+      }
     </div>
   `,
   styles: `

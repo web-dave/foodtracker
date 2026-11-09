@@ -12,30 +12,36 @@ import { CommonModule } from '@angular/common';
         <span class="icon">🍽️</span>
         <span class="description">{{ entry().description }}</span>
       </div>
-      <div *ngIf="entry().imageUrl" class="food-image">
-        <img [src]="entry().imageUrl" alt="Food photo" />
-      </div>
-      <div *ngIf="entry().nutrition" class="nutrition-info">
-        <div class="nutrition-row">
-          <span>Kalorien:</span>
-          <strong>{{ entry().nutrition!.calories }} kcal</strong>
+      @if (entry().imageUrl) {
+        <div class="food-image">
+          <img [src]="entry().imageUrl" alt="Food photo" />
         </div>
-        <div class="nutrition-row">
-          <span>Protein:</span>
-          <strong>{{ entry().nutrition!.protein }}g</strong>
+      }
+      @if (entry().nutrition) {
+        <div class="nutrition-info">
+          <div class="nutrition-row">
+            <span>Kalorien:</span>
+            <strong>{{ entry().nutrition!.calories }} kcal</strong>
+          </div>
+          <div class="nutrition-row">
+            <span>Protein:</span>
+            <strong>{{ entry().nutrition!.protein }}g</strong>
+          </div>
+          <div class="nutrition-row">
+            <span>Kohlenhydrate:</span>
+            <strong>{{ entry().nutrition!.carbs }}g</strong>
+          </div>
+          <div class="nutrition-row">
+            <span>Fett:</span>
+            <strong>{{ entry().nutrition!.fat }}g</strong>
+          </div>
         </div>
-        <div class="nutrition-row">
-          <span>Kohlenhydrate:</span>
-          <strong>{{ entry().nutrition!.carbs }}g</strong>
+      }
+      @if (entry().confidence) {
+        <div class="confidence">
+          Zuverlässigkeit: {{ (entry().confidence! * 100 | number: '1.0-0') }}%
         </div>
-        <div class="nutrition-row">
-          <span>Fett:</span>
-          <strong>{{ entry().nutrition!.fat }}g</strong>
-        </div>
-      </div>
-      <div *ngIf="entry().confidence" class="confidence">
-        Zuverlässigkeit: {{ (entry().confidence! * 100 | number: '1.0-0') }}%
-      </div>
+      }
     </div>
   `,
   styles: `
