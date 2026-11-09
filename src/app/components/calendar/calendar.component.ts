@@ -362,12 +362,12 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
     /* Week View */
     .week-view {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       width: 100%;
 
       @media (min-width: 500px) {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 10px;
       }
 
@@ -537,7 +537,7 @@ export class CalendarComponent {
   private storageService = inject(StorageService);
 
   currentDate = signal(new Date());
-  viewMode = signal<'month' | 'week'>('month');
+  viewMode = signal<'month' | 'week'>('week');
 
   monthName = computed(() => {
     const months = [
