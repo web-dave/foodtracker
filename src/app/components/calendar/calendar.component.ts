@@ -112,17 +112,14 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
                   >
                     @if (getEntriesForDay(date).length > 0) {
                       <div class="week-entries">
-                        <span class="entry-count">
-                          {{ getEntriesForDay(date).length }}
-                        </span>
                         @if (getEntriesForDay(date).some(e => e.type === 'food')) {
-                          <span>🍽️</span>
+                          <span class="entry-type-icon">🍽️</span>
                         }
                         @if (getEntriesForDay(date).some(e => e.type === 'weight')) {
-                          <span>⚖️</span>
+                          <span class="entry-type-icon">⚖️</span>
                         }
                         @if (getEntriesForDay(date).some(e => e.type === 'sport')) {
-                          <span>🏃</span>
+                          <span class="entry-type-icon">🏃</span>
                         }
                       </div>
                     } @else {
@@ -477,19 +474,32 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
 
       .week-entries {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: 3px;
+        justify-content: center;
+        gap: 6px;
         width: 100%;
 
+        @media (min-width: 500px) {
+          gap: 8px;
+        }
+
         @media (min-width: 768px) {
-          gap: 6px;
+          gap: 10px;
         }
       }
 
-      .entry-count {
-        font-weight: 600;
-        color: #333;
+      .entry-type-icon {
+        font-size: 18px;
+        line-height: 1;
+
+        @media (min-width: 500px) {
+          font-size: 20px;
+        }
+
+        @media (min-width: 768px) {
+          font-size: 22px;
+        }
       }
 
       .no-entries {
