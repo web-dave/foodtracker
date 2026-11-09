@@ -1,11 +1,16 @@
 export type EntryType = 'food' | 'weight' | 'sport' | 'blood-pressure';
 
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
 export interface FoodEntry {
   id: string;
   type: 'food';
   timestamp: Date;
   imageUrl?: string;
   description: string;
+  mealType: MealType; // breakfast, lunch, dinner, snack
+  mealNumber?: number; // optional: 1 of 3
+  totalMeals?: number; // optional: total meals per day
   nutrition?: NutritionInfo;
   confidence?: number;
 }

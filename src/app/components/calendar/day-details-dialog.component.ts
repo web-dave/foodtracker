@@ -58,6 +58,16 @@ interface DayDetailsData {
                               {{ entry.description }}
                             </span>
                           }
+                          @if (entry.mealType) {
+                            <span class="meal-type-badge" [class]="'meal-' + entry.mealType">
+                              {{ getMealTypeLabel(entry.mealType) }}
+                              @if (entry.mealNumber && entry.totalMeals) {
+                                ({{ entry.mealNumber }}/{{ entry.totalMeals }})
+                              } @else if (entry.mealNumber) {
+                                ({{ entry.mealNumber }})
+                              }
+                            </span>
+                          }
                         </div>
                       </div>
                       @if (entry.nutrition) {
@@ -324,6 +334,35 @@ interface DayDetailsData {
       flex: 1;
     }
 
+    .meal-type-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 6px;
+      border-radius: 3px;
+      margin-left: 8px;
+
+      &.meal-breakfast {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      &.meal-lunch {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      &.meal-dinner {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      &.meal-snack {
+        background: #f8d7da;
+        color: #721c24;
+      }
+    }
+
     .entry-value {
       font-size: 16px;
       font-weight: 700;
@@ -468,6 +507,16 @@ export class DayDetailsDialogComponent {
   formatTime(date: Date): string {
     const d = new Date(date);
     return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  getMealTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      breakfast: '🥣 Frühstück',
+      lunch: '🍽️ Mittagessen',
+      dinner: '🍴 Abendessen',
+      snack: '🍎 Snack',
+    };
+    return labels[type] || type;
   }
 
   getIntensityLabel(intensity: string): string {

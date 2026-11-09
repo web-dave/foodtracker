@@ -12,10 +12,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
-import { FoodEntry } from '../../models/entries';
+import { FoodEntry, MealType } from '../../models/entries';
 import { NutritionAnalysisService } from '../../services/nutrition-analysis.service';
 
 @Component({
@@ -29,6 +30,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
     MatButtonToggleModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatIconModule,
     MatProgressSpinnerModule,
     MatCardModule,
@@ -222,6 +224,46 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
               </mat-card>
             }
 
+            <!-- Meal Type Selection -->
+            <div class="meal-selection">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Art der Mahlzeit</mat-label>
+                <mat-select [(ngModel)]="mealType">
+                  <mat-option value="breakfast">🥣 Frühstück</mat-option>
+                  <mat-option value="lunch">🍽️ Mittagessen</mat-option>
+                  <mat-option value="dinner">🍴 Abendessen</mat-option>
+                  <mat-option value="snack">🍎 Snack</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Meal Number Selection -->
+            <div class="meal-number-selection">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Mahlzeitnummer</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="mealNumber"
+                  type="number"
+                  min="1"
+                  max="10"
+                  placeholder="z.B. 1"
+                />
+              </mat-form-field>
+              <span class="of-text">von</span>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Gesamt Mahlzeiten</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="totalMeals"
+                  type="number"
+                  min="1"
+                  max="10"
+                  placeholder="z.B. 3"
+                />
+              </mat-form-field>
+            </div>
+
             <!-- Description -->
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Notizen</mat-label>
@@ -414,6 +456,38 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
       resize: vertical;
     }
 
+    .meal-selection {
+      margin: 16px 0;
+    }
+
+    .meal-number-selection {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      margin: 16px 0;
+
+      mat-form-field {
+        flex: 1;
+      }
+
+      .of-text {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+        padding-bottom: 8px;
+      }
+
+      .half-width {
+        width: 100%;
+      }
+
+      @media (min-width: 600px) {
+        .half-width {
+          flex: 1;
+        }
+      }
+    }
+
     @media (max-width: 600px) {
       .food-capture-card {
         padding: 12px;
@@ -430,6 +504,19 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
 
       .nutrition-grid {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .meal-number-selection {
+        flex-direction: column;
+        align-items: stretch;
+
+        .of-text {
+          display: none;
+        }
+
+        .half-width {
+          width: 100%;
+        }
       }
 
       mat-card-header mat-card-title {
@@ -453,6 +540,9 @@ export class FoodCaptureComponent {
   foodName = '';
   foodQuantity = '';
   description = '';
+  mealType: MealType = 'lunch';
+  mealNumber: number | null = 1;
+  totalMeals: number | null = null;
 
   foodEntryCreated = output<FoodEntry>();
 
@@ -548,6 +638,9 @@ export class FoodCaptureComponent {
       timestamp: new Date(),
       imageUrl: this.capturedImage() || this.uploadedImage() || undefined,
       description: this.description || `${this.foodName} ${this.foodQuantity}`,
+      mealType: this.mealType,
+      mealNumber: this.mealNumber ?? undefined,
+      totalMeals: this.totalMeals ?? undefined,
       nutrition: this.nutrition() || {
         calories: 0,
         protein: 0,
@@ -568,5 +661,8 @@ export class FoodCaptureComponent {
     this.foodName = '';
     this.foodQuantity = '';
     this.description = '';
+    this.mealType = 'lunch';
+    this.mealNumber = 1;
+    this.totalMeals = null;
   }
 }
