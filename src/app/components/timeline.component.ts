@@ -5,13 +5,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { StorageService } from '../services/storage.service';
-import { Entry, FoodEntry, WeightEntry, SportEntry } from '../models/entries';
+import { Entry, FoodEntry, WeightEntry, SportEntry, BloodPressureEntry } from '../models/entries';
 import { EntryFoodComponent } from './entry-items/entry-food.component';
 import { EntryWeightComponent } from './entry-items/entry-weight.component';
 import { EntrySportComponent } from './entry-items/entry-sport.component';
+import { EntryBloodPressureComponent } from './entry-items/entry-blood-pressure.component';
 import { FoodDialogComponent } from './dialogs/food-dialog.component';
 import { WeightDialogComponent } from './dialogs/weight-dialog.component';
 import { SportDialogComponent } from './dialogs/sport-dialog.component';
+import { BloodPressureDialogComponent } from './dialogs/blood-pressure-dialog.component';
 
 @Component({
   selector: 'app-timeline',
@@ -24,6 +26,7 @@ import { SportDialogComponent } from './dialogs/sport-dialog.component';
     EntryFoodComponent,
     EntryWeightComponent,
     EntrySportComponent,
+    EntryBloodPressureComponent,
   ],
   template: `
     <div class="timeline-container">
@@ -61,6 +64,18 @@ import { SportDialogComponent } from './dialogs/sport-dialog.component';
         </button>
       </div>
 
+      <div class="input-section-secondary">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="openBloodPressureDialog()"
+          class="action-button"
+        >
+          <mat-icon>favorite</mat-icon>
+          <span>Blutdruck</span>
+        </button>
+      </div>
+
       <div class="timeline-entries">
         @if (todayEntries().length === 0) {
           <mat-card class="empty-state-card">
@@ -81,6 +96,9 @@ import { SportDialogComponent } from './dialogs/sport-dialog.component';
               }
               @if (entry.type === 'sport') {
                 <app-entry-sport [entry]="castToSportEntry(entry)" />
+              }
+              @if (entry.type === 'blood-pressure') {
+                <app-entry-blood-pressure [entry]="castToBloodPressureEntry(entry)" />
               }
             </mat-card-content>
             <mat-card-actions>
@@ -126,7 +144,7 @@ import { SportDialogComponent } from './dialogs/sport-dialog.component';
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
       padding: 12px 0;
       border-bottom: 2px solid rgba(0, 0, 0, 0.08);
 
@@ -136,8 +154,24 @@ import { SportDialogComponent } from './dialogs/sport-dialog.component';
 
       @media (min-width: 768px) {
         gap: 20px;
-        margin-bottom: 40px;
+        margin-bottom: 24px;
         padding-bottom: 24px;
+      }
+    }
+
+    .input-section-secondary {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+
+      @media (min-width: 500px) {
+        gap: 16px;
+      }
+
+      @media (min-width: 768px) {
+        gap: 20px;
+        margin-bottom: 40px;
       }
     }
 
@@ -304,6 +338,21 @@ export class TimelineComponent implements OnInit {
       });
   }
 
+  openBloodPressureDialog(): void {
+    this.dialog
+      .open(BloodPressureDialogComponent, {
+        width: '100%',
+        maxWidth: '500px',
+        panelClass: 'blood-pressure-dialog',
+      })
+      .afterClosed()
+      .subscribe((entry: Omit<BloodPressureEntry, 'id'> | undefined) => {
+        if (entry) {
+          this.storageService.addEntry(entry);
+        }
+      });
+  }
+
   onFoodCaptured(entry: FoodEntry): void {
     this.storageService.addEntry(entry);
   }
@@ -340,5 +389,9 @@ export class TimelineComponent implements OnInit {
 
   castToSportEntry(entry: Entry): SportEntry {
     return entry as SportEntry;
+  }
+
+  castToBloodPressureEntry(entry: Entry): BloodPressureEntry {
+    return entry as BloodPressureEntry;
   }
 }

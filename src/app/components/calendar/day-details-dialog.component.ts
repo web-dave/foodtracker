@@ -167,6 +167,48 @@ interface DayDetailsData {
             </mat-card-content>
           </mat-card>
         }
+
+        <!-- Blood Pressure Entries -->
+        @if (bloodPressureEntries().length > 0) {
+          <mat-card class="entries-card">
+            <mat-card-header>
+              <mat-card-title class="section-title">
+                💉 Blutdruck ({{ bloodPressureEntries().length }})
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="entries-list">
+                @for (entry of bloodPressureEntries(); track entry.id) {
+                  <div class="entry-item">
+                    @if (entry.type === 'blood-pressure') {
+                      <div class="entry-header">
+                        <div class="entry-info">
+                          <span class="entry-time">
+                            {{ formatTime(entry.timestamp) }}
+                          </span>
+                          <span class="bp-values">
+                            {{ entry.systolic }}/{{ entry.diastolic }} mmHg
+                          </span>
+                        </div>
+                      </div>
+                      <div class="bp-details">
+                        @if (entry.heartRate) {
+                          <span class="bp-badge">
+                            <mat-icon>favorite</mat-icon>
+                            {{ entry.heartRate }} bpm
+                          </span>
+                        }
+                        @if (entry.notes) {
+                          <span class="bp-badge">📝 {{ entry.notes }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
       }
     </mat-dialog-content>
 
@@ -338,6 +380,37 @@ interface DayDetailsData {
       }
     }
 
+    .bp-values {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c0392b;
+    }
+
+    .bp-details {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .bp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 4px 8px;
+      background: rgba(192, 57, 43, 0.1);
+      color: #c0392b;
+      border-radius: 4px;
+      font-weight: 500;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
     mat-dialog-actions {
       padding: 16px 0 0 0;
       margin-top: 16px;
@@ -379,6 +452,10 @@ export class DayDetailsDialogComponent {
 
   sportEntries() {
     return this.data.entries.filter(e => e.type === 'sport');
+  }
+
+  bloodPressureEntries() {
+    return this.data.entries.filter(e => e.type === 'blood-pressure');
   }
 
   formatDate(date: Date): string {

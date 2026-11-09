@@ -121,6 +121,9 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
                         @if (getEntriesForDay(date).some(e => e.type === 'sport')) {
                           <span class="entry-type-icon">🏃</span>
                         }
+                        @if (getEntriesForDay(date).some(e => e.type === 'blood-pressure')) {
+                          <span class="entry-type-icon">💉</span>
+                        }
                       </div>
                     } @else {
                       <span class="no-entries">Leer</span>

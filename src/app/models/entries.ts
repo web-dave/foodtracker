@@ -1,4 +1,4 @@
-export type EntryType = 'food' | 'weight' | 'sport';
+export type EntryType = 'food' | 'weight' | 'sport' | 'blood-pressure';
 
 export interface FoodEntry {
   id: string;
@@ -30,7 +30,17 @@ export interface SportEntry {
   notes?: string;
 }
 
-export type Entry = FoodEntry | WeightEntry | SportEntry;
+export interface BloodPressureEntry {
+  id: string;
+  type: 'blood-pressure';
+  timestamp: Date;
+  systolic: number; // mmHg (upper value)
+  diastolic: number; // mmHg (lower value)
+  heartRate?: number; // beats per minute
+  notes?: string;
+}
+
+export type Entry = FoodEntry | WeightEntry | SportEntry | BloodPressureEntry;
 
 export interface NutritionInfo {
   calories: number;
