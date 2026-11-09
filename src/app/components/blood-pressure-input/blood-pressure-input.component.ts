@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, input, output, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -159,13 +159,24 @@ import { BloodPressureEntry } from '../../models/entries';
     }
   `,
 })
-export class BloodPressureInputComponent {
+export class BloodPressureInputComponent implements OnInit {
+  entry = input<BloodPressureEntry | null>(null);
   bloodPressureAdded = output<Omit<BloodPressureEntry, 'id'>>();
 
   systolic = signal<number | null>(null);
   diastolic = signal<number | null>(null);
   heartRate = signal<number | null>(null);
   notes = signal<string>('');
+
+  ngOnInit(): void {
+    const initialEntry = this.entry();
+    if (initialEntry) {
+      this.systolic.set(initialEntry.systolic);
+      this.diastolic.set(initialEntry.diastolic);
+      this.heartRate.set(initialEntry.heartRate ?? null);
+      this.notes.set(initialEntry.notes ?? '');
+    }
+  }
 
   isValid(): boolean {
     return this.systolic() !== null && this.diastolic() !== null;
@@ -176,7 +187,7 @@ export class BloodPressureInputComponent {
 
     const entry: Omit<BloodPressureEntry, 'id'> = {
       type: 'blood-pressure',
-      timestamp: new Date(),
+      timestamp: this.entry()?.timestamp ?? new Date(),
       systolic: this.systolic()!,
       diastolic: this.diastolic()!,
     };

@@ -1,5 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { BloodPressureInputComponent } from '../blood-pressure-input/blood-pressure-input.component';
 import { BloodPressureEntry } from '../../models/entries';
 
@@ -8,9 +12,12 @@ import { BloodPressureEntry } from '../../models/entries';
   standalone: true,
   imports: [MatDialogModule, BloodPressureInputComponent],
   template: `
-    <h2 mat-dialog-title>💉 Blutdruck erfassen</h2>
+    <h2 mat-dialog-title>{{ isEditMode ? '💉 Blutdruck bearbeiten' : '💉 Blutdruck erfassen' }}</h2>
     <mat-dialog-content>
-      <app-blood-pressure-input (bloodPressureAdded)="onBloodPressureAdded($event)" />
+      <app-blood-pressure-input
+        [entry]="entry"
+        (bloodPressureAdded)="onBloodPressureAdded($event)"
+      />
     </mat-dialog-content>
   `,
   styles: `
@@ -27,6 +34,11 @@ import { BloodPressureEntry } from '../../models/entries';
 })
 export class BloodPressureDialogComponent {
   private dialogRef = inject(MatDialogRef<BloodPressureDialogComponent>);
+  readonly entry = inject<BloodPressureEntry | null>(MAT_DIALOG_DATA, { optional: true });
+
+  get isEditMode(): boolean {
+    return !!this.entry;
+  }
 
   onBloodPressureAdded(entry: Omit<BloodPressureEntry, 'id'>): void {
     this.dialogRef.close(entry);

@@ -1,10 +1,12 @@
 import {
   Component,
+  input,
   output,
   signal,
   ViewChild,
   ElementRef,
   inject,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
@@ -525,11 +527,13 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
     }
   `,
 })
-export class FoodCaptureComponent {
+export class FoodCaptureComponent implements OnInit {
   private nutritionService = inject(NutritionAnalysisService);
 
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
+  entry = input<FoodEntry | null>(null);
 
   mode: 'camera' | 'upload' | 'manual' = 'camera';
   cameraActive = signal(false);
@@ -545,6 +549,22 @@ export class FoodCaptureComponent {
   totalMeals: number | null = null;
 
   foodEntryCreated = output<FoodEntry>();
+
+  ngOnInit(): void {
+    const initialEntry = this.entry();
+    if (!initialEntry) return;
+
+    this.mode = 'manual';
+    this.foodName = initialEntry.description || '';
+    this.foodQuantity = '';
+    this.description = initialEntry.description || '';
+    this.mealType = initialEntry.mealType ?? 'lunch';
+    this.mealNumber = initialEntry.mealNumber ?? 1;
+    this.totalMeals = initialEntry.totalMeals ?? null;
+    this.nutrition.set(initialEntry.nutrition ?? null);
+    this.capturedImage.set(initialEntry.imageUrl ?? null);
+    this.uploadedImage.set(null);
+  }
 
   canSave() {
     if (this.mode === 'manual') {
@@ -633,15 +653,15 @@ export class FoodCaptureComponent {
 
   saveFoodEntry(): void {
     const entry: FoodEntry = {
-      id: Date.now().toString(),
+      id: this.entry()?.id ?? Date.now().toString(),
       type: 'food',
-      timestamp: new Date(),
-      imageUrl: this.capturedImage() || this.uploadedImage() || undefined,
-      description: this.description || `${this.foodName} ${this.foodQuantity}`,
+      timestamp: this.entry()?.timestamp ?? new Date(),
+      imageUrl: this.capturedImage() || this.uploadedImage() || this.entry()?.imageUrl || undefined,
+      description: this.description || `${this.foodName} ${this.foodQuantity}`.trim(),
       mealType: this.mealType,
       mealNumber: this.mealNumber ?? undefined,
       totalMeals: this.totalMeals ?? undefined,
-      nutrition: this.nutrition() || {
+      nutrition: this.nutrition() || this.entry()?.nutrition || {
         calories: 0,
         protein: 0,
         carbs: 0,

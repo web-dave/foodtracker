@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -151,19 +151,29 @@ import { WeightEntry } from '../../models/entries';
     }
   `,
 })
-export class WeightInputComponent {
+export class WeightInputComponent implements OnInit {
+  entry = input<WeightEntry | null>(null);
   weightAdded = output<Omit<WeightEntry, 'id'>>();
 
   weight = 0;
   unit: 'kg' | 'lbs' = 'kg';
   notes = '';
 
+  ngOnInit(): void {
+    const initialEntry = this.entry();
+    if (initialEntry) {
+      this.weight = initialEntry.weight;
+      this.unit = initialEntry.unit;
+      this.notes = initialEntry.notes ?? '';
+    }
+  }
+
   submit(): void {
     if (!this.weight || this.weight <= 0) return;
 
     const entry: Omit<WeightEntry, 'id'> = {
       type: 'weight',
-      timestamp: new Date(),
+      timestamp: this.entry()?.timestamp ?? new Date(),
       weight: this.weight,
       unit: this.unit,
       notes: this.notes || undefined,
