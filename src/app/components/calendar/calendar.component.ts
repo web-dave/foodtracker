@@ -126,8 +126,12 @@ import { MatCardModule } from '@angular/material/card';
     .calendar-container {
       max-width: 900px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 12px;
       min-height: 100%;
+
+      @media (min-width: 768px) {
+        padding: 24px;
+      }
     }
 
     .calendar-card {

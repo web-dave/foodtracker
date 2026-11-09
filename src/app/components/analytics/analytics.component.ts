@@ -177,7 +177,12 @@ import { Entry } from '../../models/entries';
     .analytics-container {
       max-width: 1000px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 12px;
+
+      @media (min-width: 768px) {
+        padding: 24px;
+      }
+
       min-height: 100%;
     }
 
@@ -226,8 +231,13 @@ import { Entry } from '../../models/entries';
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
     }
 
     .stat-card {

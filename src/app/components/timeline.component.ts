@@ -80,8 +80,12 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
     .timeline-container {
       max-width: 900px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 12px;
       min-height: 100%;
+
+      @media (min-width: 768px) {
+        padding: 24px;
+      }
     }
 
     .timeline-header {
@@ -98,11 +102,18 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
 
     .input-section {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
-      padding-bottom: 24px;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 12px 0;
       border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+        padding-bottom: 24px;
+      }
     }
 
     .timeline-entries {

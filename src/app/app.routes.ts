@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { TimelineComponent } from './components/timeline.component';
-import { CalendarComponent } from './components/calendar/calendar.component';
-import { AnalyticsComponent } from './components/analytics/analytics.component';
 
 export const routes: Routes = [
   {
@@ -11,18 +8,27 @@ export const routes: Routes = [
   },
   {
     path: 'today',
-    component: TimelineComponent,
-    data: { title: 'Heute', icon: '📅' },
+    loadComponent: () =>
+      import('./components/timeline.component').then(
+        m => m.TimelineComponent
+      ),
+    data: { title: 'Heute', icon: 'today' },
   },
   {
     path: 'calendar',
-    component: CalendarComponent,
-    data: { title: 'Kalender', icon: '📆' },
+    loadComponent: () =>
+      import('./components/calendar/calendar.component').then(
+        m => m.CalendarComponent
+      ),
+    data: { title: 'Kalender', icon: 'calendar_month' },
   },
   {
     path: 'analytics',
-    component: AnalyticsComponent,
-    data: { title: 'Analytik', icon: '📊' },
+    loadComponent: () =>
+      import('./components/analytics/analytics.component').then(
+        m => m.AnalyticsComponent
+      ),
+    data: { title: 'Analytik', icon: 'bar_chart' },
   },
   {
     path: '**',

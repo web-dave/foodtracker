@@ -253,9 +253,13 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
     .food-capture-card {
       max-width: 600px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 16px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      @media (min-width: 768px) {
+        padding: 20px;
+      }
     }
 
     mat-card-header {
@@ -296,22 +300,34 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
 
     .video-feed {
       width: 100%;
-      max-height: 400px;
+      max-height: 300px;
       border-radius: 8px;
       margin-bottom: 16px;
       background: #f5f5f5;
       object-fit: cover;
+
+      @media (min-width: 768px) {
+        max-height: 400px;
+      }
     }
 
     .button-group {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
       margin-bottom: 20px;
 
+      @media (min-width: 768px) {
+        gap: 12px;
+      }
+
       button {
         flex: 1;
-        min-width: 120px;
+        min-width: 100px;
+
+        @media (min-width: 768px) {
+          min-width: 120px;
+        }
       }
     }
 
