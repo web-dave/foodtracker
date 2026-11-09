@@ -1,160 +1,180 @@
 import { Component, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatIconModule,
+    MatCardModule,
+  ],
   template: `
     <div class="calendar-container">
-      <div class="calendar-header">
-        <button (click)="previousMonth()" class="nav-btn">← Zurück</button>
-        <h2>{{ monthName() }} {{ currentYear() }}</h2>
-        <button (click)="nextMonth()" class="nav-btn">Weiter →</button>
-      </div>
+      <mat-card class="calendar-card">
+        <mat-card-header class="calendar-header">
+          <button mat-icon-button (click)="previousMonth()" matTooltip="Vorheriger Monat">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <h2>{{ monthName() }} {{ currentYear() }}</h2>
+          <button mat-icon-button (click)="nextMonth()" matTooltip="Nächster Monat">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </mat-card-header>
 
-      <div class="view-toggle">
-        <button
-          [class.active]="viewMode() === 'month'"
-          (click)="setViewMode('month')"
-          class="toggle-btn"
-        >
-          📅 Monat
-        </button>
-        <button
-          [class.active]="viewMode() === 'week'"
-          (click)="setViewMode('week')"
-          class="toggle-btn"
-        >
-          📆 Woche
-        </button>
-      </div>
-
-      <!-- Month View -->
-      @if (viewMode() === 'month') {
-        <div class="calendar-grid">
-          @for (day of weekDays; track day) {
-            <div class="weekday">{{ day }}</div>
-          }
-          @for (date of calendarDates(); track date.getTime()) {
-            <div class="calendar-date">
-              <button
-                (click)="selectDate(date)"
-                [class.other-month]="date.getMonth() !== currentDate().getMonth()"
-                [class.selected]="isSelectedDate(date)"
-                [class.today]="isToday(date)"
-                class="date-btn"
-              >
-                {{ date.getDate() }}
-              </button>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Week View -->
-      @if (viewMode() === 'week') {
-        <div class="week-view">
-          <div class="week-navigation">
-            <button (click)="previousWeek()" class="nav-btn">← Zurück</button>
-            <span class="week-range">{{ getWeekRange() }}</span>
-            <button (click)="nextWeek()" class="nav-btn">Weiter →</button>
+        <mat-card-content>
+          <!-- View Toggle -->
+          <div class="view-toggle">
+            <mat-button-toggle-group
+              [value]="viewMode()"
+              (change)="setViewMode($event.value)"
+              appearance="standard"
+            >
+              <mat-button-toggle value="month">
+                <mat-icon>calendar_month</mat-icon>
+                Monat
+              </mat-button-toggle>
+              <mat-button-toggle value="week">
+                <mat-icon>view_week</mat-icon>
+                Woche
+              </mat-button-toggle>
+            </mat-button-toggle-group>
           </div>
 
-          <div class="week-grid">
-            @for (date of weekDates(); track date.getTime()) {
-              <div class="week-day">
+          <!-- Month View -->
+          @if (viewMode() === 'month') {
+            <div class="calendar-grid">
+              @for (day of weekDays; track day) {
+                <div class="weekday">{{ day }}</div>
+              }
+              @for (date of calendarDates(); track date.getTime()) {
                 <button
+                  mat-raised-button
                   (click)="selectDate(date)"
+                  [class.other-month]="date.getMonth() !== currentDate().getMonth()"
                   [class.selected]="isSelectedDate(date)"
                   [class.today]="isToday(date)"
-                  class="week-date-btn"
+                  class="date-btn"
                 >
-                  <div class="weekday-name">{{ getWeekDayName(date) }}</div>
-                  <div class="date">{{ date.getDate() }}</div>
+                  {{ date.getDate() }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Week View -->
+          @if (viewMode() === 'week') {
+            <div class="week-container">
+              <div class="week-navigation">
+                <button mat-icon-button (click)="previousWeek()" matTooltip="Vorherige Woche">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <span class="week-range">{{ getWeekRange() }}</span>
+                <button mat-icon-button (click)="nextWeek()" matTooltip="Nächste Woche">
+                  <mat-icon>chevron_right</mat-icon>
                 </button>
               </div>
-            }
-          </div>
-        </div>
-      }
 
-      @if (selectedDate()) {
-        <div class="selected-date-display">
-          <p>
-            Ausgewählter Tag:
-            <strong>{{ formatDate(selectedDate()!) }}</strong>
-          </p>
-          <button (click)="viewDetails()" class="btn btn-primary">
-            📊 Details anzeigen
-          </button>
-        </div>
-      }
+              <div class="week-grid">
+                @for (date of weekDates(); track date.getTime()) {
+                  <button
+                    mat-raised-button
+                    (click)="selectDate(date)"
+                    [class.selected]="isSelectedDate(date)"
+                    [class.today]="isToday(date)"
+                    class="week-date-btn"
+                  >
+                    <div class="weekday-name">{{ getWeekDayName(date) }}</div>
+                    <div class="date-number">{{ date.getDate() }}</div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Selected Date Display -->
+          @if (selectedDate()) {
+            <mat-card class="selected-date-card">
+              <mat-card-content>
+                <div class="selected-date-content">
+                  <span class="selected-label">Ausgewählter Tag:</span>
+                  <span class="selected-date">{{ formatDate(selectedDate()!) }}</span>
+                </div>
+                <button
+                  mat-raised-button
+                  color="accent"
+                  (click)="viewDetails()"
+                  class="details-btn"
+                >
+                  <mat-icon>info</mat-icon>
+                  Details anzeigen
+                </button>
+              </mat-card-content>
+            </mat-card>
+          }
+        </mat-card-content>
+      </mat-card>
     </div>
   `,
   styles: `
     .calendar-container {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      background: #fafafa;
-      max-width: 600px;
+      max-width: 900px;
       margin: 0 auto;
+      padding: 24px;
+      min-height: 100%;
+    }
+
+    .calendar-card {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .calendar-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.08);
 
       h2 {
         margin: 0;
-        font-size: 20px;
-        color: #333;
-        min-width: 200px;
+        font-size: 24px;
+        flex: 1;
         text-align: center;
+        color: #333;
+      }
+
+      button {
+        color: #667eea;
+
+        &:hover {
+          background-color: rgba(102, 126, 234, 0.1);
+        }
       }
     }
 
-    .nav-btn {
-      padding: 8px 16px;
-      background: #2196F3;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: #1976D2;
-      }
+    mat-card-content {
+      padding: 20px;
     }
 
     .view-toggle {
       display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
+      justify-content: center;
+      margin-bottom: 24px;
 
-      .toggle-btn {
-        flex: 1;
-        padding: 8px 12px;
-        border: 2px solid #ddd;
-        background: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s ease;
+      mat-button-toggle-group {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        &:hover {
-          border-color: #2196F3;
-        }
-
-        &.active {
-          background: #2196F3;
-          color: white;
-          border-color: #2196F3;
+      mat-button-toggle {
+        &.mat-button-toggle-checked {
+          background-color: rgba(102, 126, 234, 0.1);
+          color: #667eea;
         }
       }
     }
@@ -163,178 +183,229 @@ import { CommonModule } from '@angular/common';
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .weekday {
       text-align: center;
       font-weight: 600;
-      color: #666;
-      padding: 8px 0;
-      font-size: 12px;
-    }
-
-    .calendar-date {
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      color: #667eea;
+      font-size: 14px;
+      padding: 12px 0;
     }
 
     .date-btn {
-      width: 100%;
-      height: 100%;
-      border: 1px solid #ddd;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 2px solid rgba(0, 0, 0, 0.12);
       background: white;
-      border-radius: 4px;
-      cursor: pointer;
+      color: #333;
       font-weight: 500;
+      cursor: pointer;
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-      &:hover {
-        background: #f0f0f0;
-        border-color: #2196F3;
-      }
-
-      &.today {
-        background: #e3f2fd;
-        border-color: #2196F3;
-        font-weight: 600;
-        color: #2196F3;
-      }
-
-      &.selected {
-        background: #2196F3;
-        color: white;
-        border-color: #2196F3;
+      &:hover:not(.other-month) {
+        border-color: #667eea;
+        background-color: rgba(102, 126, 234, 0.05);
       }
 
       &.other-month {
         color: #ccc;
-        background: #f9f9f9;
+        cursor: not-allowed;
+      }
+
+      &.today {
+        border-color: #667eea;
+        background-color: rgba(102, 126, 234, 0.15);
+        color: #667eea;
+        font-weight: 700;
+      }
+
+      &.selected {
+        background-color: #667eea;
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
       }
     }
 
-    .week-view {
-      margin-bottom: 20px;
+    .week-container {
+      margin-bottom: 24px;
     }
 
     .week-navigation {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #f5f5f5;
+      border-radius: 8px;
 
       .week-range {
+        font-size: 16px;
         font-weight: 500;
         color: #333;
+      }
+
+      button {
+        color: #667eea;
+
+        &:hover {
+          background-color: rgba(102, 126, 234, 0.1);
+        }
       }
     }
 
     .week-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
-
-    .week-day {
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 12px;
     }
 
     .week-date-btn {
-      width: 100%;
-      height: 100%;
-      border: 1px solid #ddd;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 2px solid rgba(0, 0, 0, 0.12);
       background: white;
-      border-radius: 4px;
-      cursor: pointer;
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
+      cursor: pointer;
       transition: all 0.2s ease;
+      padding: 8px;
+      text-align: center;
 
       &:hover {
-        background: #f0f0f0;
-        border-color: #2196F3;
+        border-color: #667eea;
+        background-color: rgba(102, 126, 234, 0.05);
       }
 
       &.today {
-        background: #e3f2fd;
-        border-color: #2196F3;
+        border-color: #667eea;
+        background-color: rgba(102, 126, 234, 0.15);
 
-        .date {
-          color: #2196F3;
-          font-weight: 600;
+        .date-number {
+          color: #667eea;
+          font-weight: 700;
         }
       }
 
       &.selected {
-        background: #2196F3;
+        background-color: #667eea;
         color: white;
-        border-color: #2196F3;
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 
-        .date {
+        .date-number {
           color: white;
-          font-weight: 600;
+          font-weight: 700;
         }
       }
 
       .weekday-name {
         font-size: 12px;
         color: #999;
+        font-weight: 500;
       }
 
-      .date {
+      .date-number {
         font-size: 16px;
-        font-weight: 500;
+        font-weight: 600;
       }
     }
 
-    .selected-date-display {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 16px;
-      text-align: center;
+    .selected-date-card {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-left: 4px solid #667eea;
 
-      p {
-        margin: 0 0 12px 0;
-        color: #333;
+      mat-card-content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+      }
 
-        strong {
-          color: #2196F3;
+      .selected-date-content {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .selected-label {
+          font-size: 14px;
+          color: #666;
+          font-weight: 500;
+        }
+
+        .selected-date {
+          font-size: 18px;
+          font-weight: 600;
+          color: #667eea;
         }
       }
 
-      .btn {
-        padding: 8px 16px;
-        background: #2196F3;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: #1976D2;
-        }
+      .details-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
     }
 
     @media (max-width: 600px) {
+      .calendar-container {
+        padding: 12px;
+      }
+
       .calendar-header {
         flex-direction: column;
         gap: 12px;
+
+        h2 {
+          font-size: 20px;
+        }
       }
 
       .calendar-grid {
         gap: 4px;
+      }
+
+      .date-btn {
+        font-size: 12px;
+      }
+
+      .week-grid {
+        gap: 8px;
+      }
+
+      .week-date-btn {
+        font-size: 12px;
+
+        .weekday-name {
+          font-size: 10px;
+        }
+
+        .date-number {
+          font-size: 14px;
+        }
+      }
+
+      .selected-date-card mat-card-content {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .selected-date-content {
+        flex-direction: column;
       }
     }
   `,

@@ -1,132 +1,152 @@
 import { Component, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { WeightEntry } from '../../models/entries';
 
 @Component({
   selector: 'app-weight-input',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [
+    FormsModule,
+    CommonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
   template: `
-    <div class="weight-input">
-      <h2>⚖️ Gewicht</h2>
+    <mat-card class="weight-card">
+      <mat-card-header>
+        <mat-card-title>⚖️ Gewicht erfassen</mat-card-title>
+      </mat-card-header>
 
-      <div class="input-group">
-        <div class="input-row">
-          <label>Gewicht:</label>
-          <div class="input-with-unit">
-            <input
-              [(ngModel)]="weight"
-              type="number"
-              step="0.1"
-              placeholder="0.0"
-              class="input-field"
-            />
-            <select [(ngModel)]="unit" class="unit-select">
-              <option value="kg">kg</option>
-              <option value="lbs">lbs</option>
-            </select>
+      <mat-card-content>
+        <div class="input-group">
+          <div class="weight-row">
+            <mat-form-field appearance="outline" class="weight-field">
+              <mat-label>Gewicht</mat-label>
+              <input
+                matInput
+                [(ngModel)]="weight"
+                type="number"
+                step="0.1"
+                placeholder="0.0"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="unit-field">
+              <mat-label>Einheit</mat-label>
+              <mat-select [(ngModel)]="unit">
+                <mat-option value="kg">kg</mat-option>
+                <mat-option value="lbs">lbs</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
-        </div>
 
-        <div class="input-row">
-          <label>Notizen (optional):</label>
-          <input
-            [(ngModel)]="notes"
-            type="text"
-            placeholder="z.B. Morgens gemessen"
-            class="input-field"
-          />
-        </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notizen (optional)</mat-label>
+            <input
+              matInput
+              [(ngModel)]="notes"
+              type="text"
+              placeholder="z.B. Morgens gemessen"
+            />
+          </mat-form-field>
 
-        <button
-          (click)="submit()"
-          [disabled]="!weight || weight <= 0"
-          class="btn btn-primary"
-        >
-          ✅ Hinzufügen
-        </button>
-      </div>
-    </div>
+          <button
+            mat-raised-button
+            color="accent"
+            (click)="submit()"
+            [disabled]="!weight || weight <= 0"
+            class="full-width"
+          >
+            <mat-icon>add_circle</mat-icon>
+            Hinzufügen
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
   `,
   styles: `
-    .weight-input {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 16px;
-      background: #fafafa;
+    .weight-card {
+      margin-bottom: 20px;
+    }
 
-      h2 {
-        margin: 0 0 16px 0;
+    mat-card-header {
+      padding: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      margin-bottom: 16px;
+
+      mat-card-title {
         font-size: 18px;
-        color: #333;
+        margin: 0;
       }
+    }
+
+    mat-card-content {
+      padding: 16px;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
 
-    .input-row {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .weight-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
 
-      label {
-        font-size: 14px;
-        font-weight: 500;
-        color: #333;
+      @media (max-width: 600px) {
+        grid-template-columns: 1fr;
       }
     }
 
-    .input-with-unit {
+    .weight-field,
+    .unit-field,
+    .full-width {
+      width: 100%;
+    }
+
+    mat-form-field {
+      display: block;
+    }
+
+    button[mat-raised-button] {
       display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 8px;
-
-      .input-field {
-        flex: 1;
-      }
-
-      .unit-select {
-        width: 80px;
-      }
-    }
-
-    .input-field,
-    .unit-select {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      box-sizing: border-box;
-
-      &:focus {
-        outline: none;
-        border-color: #2196F3;
-        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-      }
-    }
-
-    .btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      height: 40px;
       font-weight: 500;
-      background: #2196F3;
-      color: white;
+      transition: all 0.3s ease;
 
       &:hover:not(:disabled) {
-        background: #1976D2;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
       &:disabled {
         opacity: 0.6;
-        cursor: not-allowed;
+      }
+    }
+
+    @media (max-width: 600px) {
+      mat-card-header {
+        padding: 12px;
+      }
+
+      mat-card-content {
+        padding: 12px;
       }
     }
   `,

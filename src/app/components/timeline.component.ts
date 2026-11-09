@@ -34,7 +34,7 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
       </div>
 
       <div class="input-section">
-        <app-food-capture (foodCaptured)="onFoodCaptured($event)" />
+        <app-food-capture (foodEntryCreated)="onFoodCaptured($event)" />
         <app-weight-input (weightAdded)="onWeightAdded($event)" />
         <app-sport-input (sportAdded)="onSportAdded($event)" />
       </div>
@@ -196,7 +196,7 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onFoodCaptured(entry: Omit<FoodEntry, 'id'>): void {
+  onFoodCaptured(entry: FoodEntry): void {
     this.storageService.addEntry(entry);
   }
 

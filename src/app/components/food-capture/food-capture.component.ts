@@ -7,436 +7,467 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
 import { FoodEntry } from '../../models/entries';
 import { NutritionAnalysisService } from '../../services/nutrition-analysis.service';
 
 @Component({
   selector: 'app-food-capture',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatCardModule,
+  ],
   template: `
-    <div class="food-capture">
-      <h2>🍽️ Essen</h2>
+    <mat-card class="food-capture-card">
+      <mat-card-header>
+        <mat-card-title>🍽️ Essen erfassen</mat-card-title>
+      </mat-card-header>
 
-      <div class="capture-modes">
-        <button
-          [class.active]="mode() === 'camera'"
-          (click)="setMode('camera')"
-          class="mode-btn"
-        >
-          📷 Kamera
-        </button>
-        <button
-          [class.active]="mode() === 'upload'"
-          (click)="setMode('upload')"
-          class="mode-btn"
-        >
-          📁 Datei
-        </button>
-        <button
-          [class.active]="mode() === 'manual'"
-          (click)="setMode('manual')"
-          class="mode-btn"
-        >
-          ✏️ Manuell
-        </button>
-      </div>
+      <mat-card-content>
+        <!-- Mode Selection -->
+        <div class="mode-selector">
+          <mat-button-toggle-group
+            [(value)]="mode"
+            (change)="mode = $event.value"
+            appearance="standard"
+          >
+            <mat-button-toggle value="camera">
+              <mat-icon>camera_alt</mat-icon>
+              Foto
+            </mat-button-toggle>
+            <mat-button-toggle value="upload">
+              <mat-icon>image</mat-icon>
+              Upload
+            </mat-button-toggle>
+            <mat-button-toggle value="manual">
+              <mat-icon>edit</mat-icon>
+              Manuell
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
 
-      <!-- Camera Mode -->
-      @if (mode() === 'camera') {
-        <div class="capture-section">
-          <video
-            #videoElement
-            class="video-preview"
-            autoplay
-            playsinline
-          ></video>
-          <div class="button-group">
-            <button (click)="initCamera()" class="btn btn-primary">
-              Kamera starten
-            </button>
-            @if (cameraActive()) {
-              <button (click)="capturePhoto()" class="btn btn-success">
-                📷 Foto aufnehmen
+        <!-- Camera Mode -->
+        @if (mode === 'camera') {
+          <div class="camera-section">
+            <video
+              #videoElement
+              autoplay
+              playsinline
+              class="video-feed"
+            ></video>
+            <div class="button-group">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="startCamera()"
+                [disabled]="cameraActive()"
+              >
+                <mat-icon>videocam</mat-icon>
+                Kamera starten
               </button>
-              <button (click)="stopCamera()" class="btn btn-secondary">
-                Stoppen
+              <button
+                mat-raised-button
+                color="accent"
+                (click)="capturePhoto()"
+                [disabled]="!cameraActive()"
+              >
+                <mat-icon>photo_camera</mat-icon>
+                Foto machen
               </button>
-            }
+              <button
+                mat-raised-button
+                (click)="stopCamera()"
+                [disabled]="!cameraActive()"
+              >
+                <mat-icon>videocam_off</mat-icon>
+                Kamera stoppen
+              </button>
+            </div>
           </div>
-        </div>
-      }
+        }
 
-      <!-- Upload Mode -->
-      @if (mode() === 'upload') {
-        <div class="capture-section">
-          <input
-            #fileInput
-            type="file"
-            accept="image/*"
-            (change)="onFileSelected($event)"
-            class="file-input"
-          />
-          <label for="fileInput" class="file-label">
-            📁 Wählen Sie ein Bild aus
-          </label>
-        </div>
-      }
+        <!-- Upload Mode -->
+        @if (mode === 'upload') {
+          <div class="upload-section">
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              (change)="handleFileUpload($event)"
+              style="display: none"
+            />
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="fileInput.click()"
+            >
+              <mat-icon>cloud_upload</mat-icon>
+              Bild hochladen
+            </button>
+          </div>
+        }
 
-      <!-- Photo Preview & Description -->
-      @if (capturedImage()) {
-        <div class="preview-section">
-          <img [src]="capturedImage()" class="preview-image" />
-
-          <div class="description-form">
-            <label>
-              Beschreibung (optional):
+        <!-- Manual Entry Mode -->
+        @if (mode === 'manual') {
+          <div class="manual-entry-section">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Lebensmittel / Gericht</mat-label>
               <input
-                v-model="description"
-                [(ngModel)]="description"
-                type="text"
-                placeholder="z.B. Salat mit Hühnchen"
-                class="input-field"
+                matInput
+                [(ngModel)]="foodName"
+                placeholder="z.B. Hähnchenbrust mit Reis"
               />
-            </label>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Menge</mat-label>
+              <input
+                matInput
+                [(ngModel)]="foodQuantity"
+                placeholder="z.B. 150g, 1 Portion"
+              />
+            </mat-form-field>
+          </div>
+        }
+
+        <!-- Preview & Nutrition Analysis -->
+        @if (capturedImage() || uploadedImage() || mode === 'manual') {
+          <div class="preview-section">
+            @if (capturedImage() || uploadedImage()) {
+              <img
+                [src]="capturedImage() || uploadedImage()"
+                alt="Vorschau"
+                class="preview-image"
+              />
+            }
 
             <div class="button-group">
               <button
-                (click)="analyze()"
-                [disabled]="isAnalyzing()"
-                class="btn btn-primary"
+                mat-raised-button
+                color="primary"
+                (click)="analyzeFood()"
+                [disabled]="
+                  isAnalyzing() ||
+                  (!capturedImage() && !uploadedImage() && mode !== 'manual')
+                "
               >
-                {{ isAnalyzing() ? 'Analysiere...' : '🤖 Mit KI analysieren' }}
+                @if (isAnalyzing()) {
+                  <mat-spinner
+                    diameter="20"
+                    strokeWidth="2"
+                  ></mat-spinner>
+                } @else {
+                  <ng-container>
+                    <mat-icon>search</mat-icon>
+                    Analysieren
+                  </ng-container>
+                }
               </button>
               <button
-                (click)="submitFood()"
+                mat-raised-button
+                (click)="resetCapture()"
                 [disabled]="isAnalyzing()"
-                class="btn btn-success"
               >
-                {{ isAnalyzing() ? 'Bitte warten...' : '✅ Speichern' }}
-              </button>
-              <button (click)="clearCapture()" class="btn btn-secondary">
-                ❌ Verwerfen
+                <mat-icon>close</mat-icon>
+                Zurücksetzen
               </button>
             </div>
+
+            <!-- Nutrition Analysis Result -->
+            @if (nutrition(); as nut) {
+              <mat-card class="nutrition-preview-card">
+                <mat-card-header>
+                  <mat-card-title>📊 Geschätzte Nährwerte</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="nutrition-grid">
+                    <div class="nutrition-item">
+                      <span class="nutrition-label">Kalorien</span>
+                      <span class="nutrition-value">{{ nut.calories }}</span>
+                      <span class="nutrition-unit">kcal</span>
+                    </div>
+                    <div class="nutrition-item">
+                      <span class="nutrition-label">Protein</span>
+                      <span class="nutrition-value">{{ nut.protein }}</span>
+                      <span class="nutrition-unit">g</span>
+                    </div>
+                    <div class="nutrition-item">
+                      <span class="nutrition-label">Kohlenhydrate</span>
+                      <span class="nutrition-value">{{ nut.carbs }}</span>
+                      <span class="nutrition-unit">g</span>
+                    </div>
+                    <div class="nutrition-item">
+                      <span class="nutrition-label">Fett</span>
+                      <span class="nutrition-value">{{ nut.fat }}</span>
+                      <span class="nutrition-unit">g</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+
+            <!-- Description -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Notizen</mat-label>
+              <textarea
+                matInput
+                [(ngModel)]="description"
+                placeholder="Zusätzliche Informationen zum Essen..."
+                rows="3"
+              ></textarea>
+            </mat-form-field>
+
+            <!-- Save Button -->
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="saveFoodEntry()"
+              [disabled]="!canSave()"
+              class="save-button"
+            >
+              <mat-icon>save</mat-icon>
+              Eintrag speichern
+            </button>
           </div>
-
-          @if (nutrition()) {
-            <div class="nutrition-preview">
-              <h3>Geschätzte Nährwerte</h3>
-              <div class="nutrition-grid">
-                <div class="nutrition-item">
-                  <div class="label">Kalorien</div>
-                  <div class="value">{{ nutrition().calories }} kcal</div>
-                </div>
-                <div class="nutrition-item">
-                  <div class="label">Protein</div>
-                  <div class="value">{{ nutrition().protein }}g</div>
-                </div>
-                <div class="nutrition-item">
-                  <div class="label">Kohlenhydrate</div>
-                  <div class="value">{{ nutrition().carbs }}g</div>
-                </div>
-                <div class="nutrition-item">
-                  <div class="label">Fett</div>
-                  <div class="value">{{ nutrition().fat }}g</div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Manual Entry -->
-      @if (mode() === 'manual') {
-        <div class="manual-section">
-          <label>
-            Beschreibung:
-            <input
-              [(ngModel)]="description"
-              type="text"
-              placeholder="Was haben Sie gegessen?"
-              class="input-field"
-            />
-          </label>
-
-        <button
-          (click)="submitFood()"
-          [disabled]="!description.trim()"
-          class="btn btn-success"
-        >
-          ✅ Speichern
-        </button>
-        </div>
-      }
-    </div>
+        }
+      </mat-card-content>
+    </mat-card>
   `,
   styles: `
-    .food-capture {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 16px;
-      background: #fafafa;
+    .food-capture-card {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-      h2 {
-        margin: 0 0 16px 0;
-        font-size: 18px;
+    mat-card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+
+      mat-card-title {
+        font-size: 24px;
+        margin: 0;
         color: #333;
       }
     }
 
-    .capture-modes {
+    mat-card-content {
+      padding: 20px 0;
+    }
+
+    .mode-selector {
+      margin-bottom: 24px;
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      justify-content: center;
 
-      .mode-btn {
+      mat-button-toggle-group {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      mat-button-toggle {
         flex: 1;
-        padding: 8px 12px;
-        border: 2px solid #ddd;
-        background: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s ease;
-
-        &:hover {
-          border-color: #4CAF50;
-          background: #f0f0f0;
-        }
-
-        &.active {
-          background: #4CAF50;
-          color: white;
-          border-color: #4CAF50;
-        }
       }
     }
 
-    .capture-section,
-    .manual-section {
-      margin-bottom: 16px;
+    .camera-section,
+    .upload-section,
+    .manual-entry-section {
+      margin-bottom: 20px;
     }
 
-    .video-preview {
+    .video-feed {
       width: 100%;
-      max-height: 300px;
-      background: #000;
-      border-radius: 4px;
-      margin-bottom: 12px;
-      display: block;
+      max-height: 400px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      background: #f5f5f5;
+      object-fit: cover;
     }
 
-    .file-input {
-      display: none;
-    }
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
 
-    .file-label {
-      display: block;
-      padding: 20px;
-      border: 2px dashed #4CAF50;
-      border-radius: 4px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: white;
-
-      &:hover {
-        background: #f0f8f0;
+      button {
+        flex: 1;
+        min-width: 120px;
       }
+    }
+
+    .full-width {
+      width: 100%;
+      margin-bottom: 16px;
     }
 
     .preview-section {
-      margin-top: 16px;
+      margin-top: 24px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
     }
 
     .preview-image {
       width: 100%;
       max-height: 300px;
-      border-radius: 4px;
+      border-radius: 8px;
       margin-bottom: 16px;
-      display: block;
+      object-fit: cover;
     }
 
-    .description-form {
-      margin-bottom: 16px;
+    .nutrition-preview-card {
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-      label {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 14px;
+      mat-card-header {
+        margin-bottom: 12px;
+
+        mat-card-title {
+          font-size: 18px;
+        }
+      }
+
+      mat-card-content {
+        padding: 16px 0;
+      }
+    }
+
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 12px;
+    }
+
+    .nutrition-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+
+      .nutrition-label {
+        font-size: 12px;
+        color: #666;
         font-weight: 500;
+        margin-bottom: 4px;
+      }
+
+      .nutrition-value {
+        font-size: 20px;
+        font-weight: 700;
         color: #333;
       }
 
-      .input-field {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        box-sizing: border-box;
-
-        &:focus {
-          outline: none;
-          border-color: #4CAF50;
-          box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-        }
+      .nutrition-unit {
+        font-size: 11px;
+        color: #999;
+        margin-top: 2px;
       }
     }
 
-    .button-group {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-
-      .btn {
-        flex: 1;
-        min-width: 100px;
-      }
+    .save-button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 16px;
     }
 
-    .nutrition-preview {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 16px;
-      margin-top: 16px;
-
-      h3 {
-        margin: 0 0 12px 0;
-        font-size: 14px;
-        color: #666;
-      }
-
-      .nutrition-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
-
-      .nutrition-item {
-        background: #f9f9f9;
-        padding: 12px;
-        border-radius: 4px;
-        text-align: center;
-
-        .label {
-          font-size: 12px;
-          color: #999;
-          margin-bottom: 4px;
-        }
-
-        .value {
-          font-size: 16px;
-          font-weight: 600;
-          color: #4CAF50;
-        }
-      }
-    }
-
-    .btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 500;
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      &.btn-primary {
-        background: #2196F3;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #1976D2;
-        }
-      }
-
-      &.btn-success {
-        background: #4CAF50;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #45a049;
-        }
-      }
-
-      &.btn-secondary {
-        background: #f44336;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #da190b;
-        }
-      }
+    textarea {
+      resize: vertical;
     }
 
     @media (max-width: 600px) {
-      .button-group {
-        flex-direction: column;
+      .food-capture-card {
+        padding: 12px;
+      }
 
-        .btn {
-          width: 100%;
-        }
+      .mode-selector mat-button-toggle-group {
+        flex-direction: column;
+      }
+
+      .button-group button {
+        min-width: 100px;
+        font-size: 12px;
       }
 
       .nutrition-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      mat-card-header mat-card-title {
+        font-size: 20px;
       }
     }
   `,
 })
 export class FoodCaptureComponent {
-  @ViewChild('videoElement') videoElement?: ElementRef<HTMLVideoElement>;
-
   private nutritionService = inject(NutritionAnalysisService);
 
-  foodCaptured = output<Omit<FoodEntry, 'id'>>();
+  @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  mode = signal<'camera' | 'upload' | 'manual'>('camera');
+  mode: 'camera' | 'upload' | 'manual' = 'camera';
   cameraActive = signal(false);
   capturedImage = signal<string | null>(null);
-  description = '';
-  isAnalyzing = signal(false);
+  uploadedImage = signal<string | null>(null);
   nutrition = signal<any>(null);
+  isAnalyzing = signal(false);
+  foodName = '';
+  foodQuantity = '';
+  description = '';
 
-  private stream: MediaStream | null = null;
+  foodEntryCreated = output<FoodEntry>();
 
-  async initCamera(): Promise<void> {
+  canSave() {
+    if (this.mode === 'manual') {
+      return this.foodName.trim().length > 0;
+    }
+    return (this.capturedImage() || this.uploadedImage()) && !this.isAnalyzing();
+  }
+
+  async startCamera(): Promise<void> {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
       });
 
       if (this.videoElement) {
-        this.videoElement.nativeElement.srcObject = this.stream;
+        this.videoElement.nativeElement.srcObject = stream;
         this.cameraActive.set(true);
       }
     } catch (error) {
-      console.error('Fehler beim Zugriff auf Kamera:', error);
-      alert('Kamerazugriff verweigert');
-    }
-  }
-
-  stopCamera(): void {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
-      this.cameraActive.set(false);
+      console.error('Kamerafehler:', error);
+      alert('Kamera konnte nicht gestartet werden');
     }
   }
 
   capturePhoto(): void {
     if (!this.videoElement) return;
 
-    const canvas = document.createElement('canvas');
     const video = this.videoElement.nativeElement;
+    const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
@@ -444,63 +475,82 @@ export class FoodCaptureComponent {
     if (ctx) {
       ctx.drawImage(video, 0, 0);
       this.capturedImage.set(canvas.toDataURL('image/jpeg'));
-      this.stopCamera();
+      this.nutrition.set(null);
     }
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      this.capturedImage.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+  stopCamera(): void {
+    if (this.videoElement) {
+      const stream = this.videoElement.nativeElement
+        .srcObject as MediaStream;
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      this.cameraActive.set(false);
+    }
   }
 
-  async analyze(): Promise<void> {
-    if (!this.capturedImage()) return;
+  handleFileUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.uploadedImage.set(e.target?.result as string);
+        this.nutrition.set(null);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
 
+  async analyzeFood(): Promise<void> {
     this.isAnalyzing.set(true);
-    try {
-      const result = await this.nutritionService.analyzeFoodImage(
-        this.capturedImage()!
-      );
 
-      this.description = result.description;
-      this.nutrition.set(result.nutrition);
+    try {
+      const imageUrl = this.capturedImage() || this.uploadedImage();
+
+      if (imageUrl && this.mode !== 'manual') {
+        const result = await this.nutritionService.analyzeFoodImage(imageUrl);
+        this.nutrition.set(result);
+      } else if (this.mode === 'manual' && this.foodName) {
+        const result = await this.nutritionService.analyzeFoodImage(
+          this.foodName
+        );
+        this.nutrition.set(result);
+      }
     } catch (error) {
-      console.error('Fehler bei der Analyse:', error);
-      alert('Analyse fehlgeschlagen');
+      console.error('Analysefehler:', error);
+      alert('Analyse konnte nicht durchgeführt werden');
     } finally {
       this.isAnalyzing.set(false);
     }
   }
 
-  submitFood(): void {
-    const entry: Omit<FoodEntry, 'id'> = {
+  saveFoodEntry(): void {
+    const entry: FoodEntry = {
+      id: Date.now().toString(),
       type: 'food',
       timestamp: new Date(),
-      description: this.description,
-      imageUrl: this.capturedImage() || undefined,
-      nutrition: this.nutrition() || undefined,
+      imageUrl: this.capturedImage() || this.uploadedImage() || undefined,
+      description: this.description || `${this.foodName} ${this.foodQuantity}`,
+      nutrition: this.nutrition() || {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      },
     };
 
-    this.foodCaptured.emit(entry);
-    this.clearCapture();
+    this.foodEntryCreated.emit(entry);
+    this.resetCapture();
   }
 
-  clearCapture(): void {
-    this.capturedImage.set(null);
-    this.description = '';
-    this.nutrition.set(null);
-  }
-
-  setMode(newMode: 'camera' | 'upload' | 'manual'): void {
+  resetCapture(): void {
     this.stopCamera();
-    this.mode.set(newMode);
+    this.capturedImage.set(null);
+    this.uploadedImage.set(null);
+    this.nutrition.set(null);
+    this.foodName = '';
+    this.foodQuantity = '';
+    this.description = '';
   }
 }
