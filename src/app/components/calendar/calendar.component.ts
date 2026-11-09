@@ -45,11 +45,11 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
             >
               <mat-button-toggle value="month">
                 <mat-icon>calendar_month</mat-icon>
-                Monat
+                <span class="toggle-label">Monat</span>
               </mat-button-toggle>
               <mat-button-toggle value="week">
                 <mat-icon>view_week</mat-icon>
-                Woche
+                <span class="toggle-label">Woche</span>
               </mat-button-toggle>
             </mat-button-toggle-group>
           </div>
@@ -74,7 +74,7 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
                   [class.today]="isToday(date)"
                   [class.has-entries]="hasEntries(date)"
                   (click)="openDayDetails(date)"
-                  [matTooltip]="getDayTooltip(date)"
+                  [attr.aria-label]="getDayAriaLabel(date)"
                 >
                   <span class="day-number">{{ date.getDate() }}</span>
                   @if (hasEntries(date)) {
@@ -113,7 +113,7 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
                     @if (getEntriesForDay(date).length > 0) {
                       <div class="week-entries">
                         <span class="entry-count">
-                          {{ getEntriesForDay(date).length }} Einträge
+                          {{ getEntriesForDay(date).length }}
                         </span>
                         @if (getEntriesForDay(date).some(e => e.type === 'food')) {
                           <span>🍽️</span>
@@ -126,7 +126,7 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
                         }
                       </div>
                     } @else {
-                      <span>Keine Einträge</span>
+                      <span class="no-entries">Leer</span>
                     }
                   </button>
                 </div>
@@ -143,6 +143,8 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
       margin: 0 auto;
       padding: 12px;
       min-height: 100%;
+      width: 100%;
+      overflow: hidden;
 
       @media (min-width: 768px) {
         padding: 24px;
@@ -151,47 +153,96 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
 
     .calendar-card {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
     }
 
     .calendar-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px;
+      padding: 12px;
       border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+      gap: 8px;
+
+      @media (min-width: 768px) {
+        padding: 16px;
+      }
 
       h2 {
         margin: 0;
         flex: 1;
         text-align: center;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 500;
+        min-width: 150px;
+
+        @media (min-width: 768px) {
+          font-size: 20px;
+          min-width: auto;
+        }
       }
 
       button {
-        padding: 8px;
+        padding: 4px;
+
+        @media (min-width: 768px) {
+          padding: 8px;
+        }
       }
     }
 
     mat-card-content {
-      padding: 20px;
+      padding: 12px;
+
+      @media (min-width: 768px) {
+        padding: 20px;
+      }
     }
 
     .view-toggle {
       display: flex;
       justify-content: center;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
+
+      @media (min-width: 768px) {
+        margin-bottom: 24px;
+      }
 
       mat-button-toggle-group {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
+
+      .toggle-label {
+        display: none;
+
+        @media (min-width: 500px) {
+          display: inline;
+          margin-left: 4px;
+        }
+      }
+
+      mat-button-toggle {
+        min-width: 40px;
+        padding: 4px;
+
+        @media (min-width: 500px) {
+          min-width: 80px;
+          padding: 8px 12px;
+        }
+      }
     }
 
-    /* Month View */
+    /* Month View - Responsive */
     .month-view {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
+      gap: 4px;
+      width: 100%;
+      overflow: hidden;
+
+      @media (min-width: 500px) {
+        gap: 6px;
+      }
 
       @media (min-width: 768px) {
         gap: 12px;
@@ -202,20 +253,26 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
       text-align: center;
       font-weight: 600;
       color: #666;
-      padding: 8px;
-      font-size: 12px;
+      padding: 4px 2px;
+      font-size: 10px;
+      line-height: 1.2;
+
+      @media (min-width: 500px) {
+        padding: 6px;
+        font-size: 11px;
+      }
 
       @media (min-width: 768px) {
-        font-size: 14px;
-        padding: 12px;
+        font-size: 12px;
+        padding: 8px;
       }
     }
 
     .calendar-day {
       aspect-ratio: 1;
-      border: 2px solid rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      padding: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      padding: 2px;
       background: white;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -223,57 +280,84 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: 2px;
-      font-size: 12px;
+      gap: 1px;
+      font-size: 10px;
       color: #333;
       position: relative;
+      min-width: 0;
+      overflow: hidden;
 
-      @media (min-width: 768px) {
-        font-size: 14px;
-        padding: 8px;
-        gap: 4px;
+      @media (min-width: 500px) {
+        padding: 3px;
+        gap: 2px;
+        font-size: 11px;
+        border-radius: 6px;
+        border-width: 1.5px;
       }
 
-      &:hover {
+      @media (min-width: 768px) {
+        font-size: 12px;
+        padding: 6px;
+        gap: 3px;
+        border-radius: 8px;
+        border-width: 2px;
+      }
+
+      &:hover:not(.other-month) {
         border-color: #667eea;
         background: rgba(102, 126, 234, 0.05);
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+      }
+
+      &:active:not(.other-month) {
+        transform: scale(0.98);
       }
 
       &.other-month {
-        opacity: 0.4;
+        opacity: 0.3;
         background: #f9f9f9;
+        cursor: default;
       }
 
       &.today {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.08) 100%);
         border-color: #667eea;
         font-weight: 600;
         color: #667eea;
       }
 
       &.has-entries {
-        background: linear-gradient(135deg, rgba(67, 233, 123, 0.08) 0%, rgba(56, 249, 215, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(67, 233, 123, 0.1) 0%, rgba(56, 249, 215, 0.05) 100%);
         border-color: #43e97b;
       }
 
       .day-number {
         font-weight: 600;
+        line-height: 1;
       }
 
       .entry-indicators {
         display: flex;
-        gap: 2px;
+        gap: 1px;
         flex-wrap: wrap;
         justify-content: center;
+        width: 100%;
+
+        @media (min-width: 500px) {
+          gap: 2px;
+        }
       }
 
       .indicator {
-        font-size: 10px;
+        font-size: 8px;
         line-height: 1;
 
+        @media (min-width: 500px) {
+          font-size: 9px;
+        }
+
         @media (min-width: 768px) {
-          font-size: 12px;
+          font-size: 10px;
         }
       }
     }
@@ -281,19 +365,30 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
     /* Week View */
     .week-view {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 8px;
+      width: 100%;
+
+      @media (min-width: 500px) {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 10px;
+      }
 
       @media (min-width: 768px) {
         grid-template-columns: repeat(7, 1fr);
-        gap: 16px;
+        gap: 12px;
       }
     }
 
     .week-day {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
+      min-width: 0;
+
+      @media (min-width: 768px) {
+        gap: 8px;
+      }
 
       &.is-today {
         .week-day-header {
@@ -308,37 +403,70 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 12px;
+      padding: 8px 4px;
       background: rgba(0, 0, 0, 0.04);
-      border-radius: 4px;
+      border-radius: 3px;
       transition: all 0.2s ease;
 
+      @media (min-width: 500px) {
+        padding: 10px 6px;
+        border-radius: 4px;
+      }
+
+      @media (min-width: 768px) {
+        padding: 12px;
+        border-radius: 4px;
+      }
+
       .day-name {
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 600;
         color: #666;
+        line-height: 1;
+
+        @media (min-width: 768px) {
+          font-size: 12px;
+        }
       }
 
       .day-date {
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 700;
         color: #333;
+        line-height: 1.2;
+
+        @media (min-width: 768px) {
+          font-size: 16px;
+        }
       }
     }
 
     .week-day-btn {
-      min-height: 80px;
-      border-radius: 8px;
-      padding: 12px;
+      min-height: 60px;
+      border-radius: 6px;
+      padding: 8px;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
+      width: 100%;
+
+      @media (min-width: 500px) {
+        min-height: 70px;
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      @media (min-width: 768px) {
+        min-height: 80px;
+        padding: 12px;
+        font-size: 13px;
+      }
 
       &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         background: rgba(102, 126, 234, 0.05);
       }
 
@@ -351,36 +479,45 @@ import { DayDetailsDialogComponent } from './day-details-dialog.component';
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 3px;
         width: 100%;
+
+        @media (min-width: 768px) {
+          gap: 6px;
+        }
       }
 
       .entry-count {
         font-weight: 600;
         color: #333;
       }
+
+      .no-entries {
+        color: #999;
+        font-style: italic;
+      }
     }
 
-    @media (max-width: 600px) {
-      mat-card-content {
-        padding: 12px;
-      }
-
-      .calendar-day {
-        font-size: 11px;
-      }
-
-      .week-view {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      }
-
-      .week-day-header {
+    @media (max-width: 400px) {
+      .calendar-container {
         padding: 8px;
       }
 
-      .week-day-btn {
-        min-height: 70px;
-        font-size: 11px;
+      mat-card-content {
+        padding: 8px;
+      }
+
+      .calendar-day {
+        font-size: 9px;
+
+        .indicator {
+          font-size: 7px;
+        }
+      }
+
+      .day-header {
+        font-size: 9px;
+        padding: 3px 1px;
       }
     }
   `,
@@ -506,7 +643,20 @@ export class CalendarComponent {
     return parts.join(', ');
   }
 
+  getDayAriaLabel(date: Date): string {
+    const dateStr = date.toLocaleDateString('de-DE');
+    const entries = this.getEntriesForDay(date);
+    if (entries.length === 0) {
+      return `${dateStr}, keine Einträge`;
+    }
+    return `${dateStr}, ${entries.length} Einträge`;
+  }
+
   openDayDetails(date: Date): void {
+    if (!this.isCurrentMonth(date)) {
+      return;
+    }
+
     const entries = this.getEntriesForDay(date);
     this.dialog.open(DayDetailsDialogComponent, {
       width: '100%',
