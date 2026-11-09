@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { StorageService } from '../services/storage.service';
 import { Entry, FoodEntry, WeightEntry, SportEntry } from '../models/entries';
-import { FoodCaptureComponent } from './food-capture/food-capture.component';
-import { WeightInputComponent } from './weight-input/weight-input.component';
-import { SportInputComponent } from './sport-input/sport-input.component';
 import { EntryFoodComponent } from './entry-items/entry-food.component';
 import { EntryWeightComponent } from './entry-items/entry-weight.component';
 import { EntrySportComponent } from './entry-items/entry-sport.component';
+import { FoodDialogComponent } from './dialogs/food-dialog.component';
+import { WeightDialogComponent } from './dialogs/weight-dialog.component';
+import { SportDialogComponent } from './dialogs/sport-dialog.component';
 
 @Component({
   selector: 'app-timeline',
@@ -20,9 +21,6 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    FoodCaptureComponent,
-    WeightInputComponent,
-    SportInputComponent,
     EntryFoodComponent,
     EntryWeightComponent,
     EntrySportComponent,
@@ -34,9 +32,33 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
       </div>
 
       <div class="input-section">
-        <app-food-capture (foodEntryCreated)="onFoodCaptured($event)" />
-        <app-weight-input (weightAdded)="onWeightAdded($event)" />
-        <app-sport-input (sportAdded)="onSportAdded($event)" />
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="openFoodDialog()"
+          class="action-button"
+        >
+          <mat-icon>restaurant</mat-icon>
+          <span>Essen</span>
+        </button>
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="openWeightDialog()"
+          class="action-button"
+        >
+          <mat-icon>scale</mat-icon>
+          <span>Gewicht</span>
+        </button>
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="openSportDialog()"
+          class="action-button"
+        >
+          <mat-icon>directions_run</mat-icon>
+          <span>Sport</span>
+        </button>
       </div>
 
       <div class="timeline-entries">
@@ -102,17 +124,52 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
 
     .input-section {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
       margin-bottom: 24px;
       padding: 12px 0;
       border-bottom: 2px solid rgba(0, 0, 0, 0.08);
 
+      @media (min-width: 500px) {
+        gap: 16px;
+      }
+
       @media (min-width: 768px) {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 24px;
+        gap: 20px;
         margin-bottom: 40px;
         padding-bottom: 24px;
+      }
+    }
+
+    .action-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 8px;
+      height: auto;
+      font-size: 14px;
+      font-weight: 500;
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+
+      span {
+        white-space: nowrap;
+      }
+
+      @media (max-width: 500px) {
+        padding: 12px 4px;
+        font-size: 12px;
+
+        mat-icon {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+        }
       }
     }
 
@@ -177,17 +234,12 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
       .timeline-header h1 {
         font-size: 24px;
       }
-
-      .input-section {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-      }
     }
   `,
 })
 export class TimelineComponent implements OnInit {
   private storageService = inject(StorageService);
+  private dialog = inject(MatDialog);
 
   todayEntries = computed(() => {
     const today = new Date();
@@ -206,6 +258,51 @@ export class TimelineComponent implements OnInit {
   });
 
   ngOnInit(): void {}
+
+  openFoodDialog(): void {
+    this.dialog
+      .open(FoodDialogComponent, {
+        width: '100%',
+        maxWidth: '500px',
+        panelClass: 'food-dialog',
+      })
+      .afterClosed()
+      .subscribe((entry: FoodEntry | undefined) => {
+        if (entry) {
+          this.storageService.addEntry(entry);
+        }
+      });
+  }
+
+  openWeightDialog(): void {
+    this.dialog
+      .open(WeightDialogComponent, {
+        width: '100%',
+        maxWidth: '500px',
+        panelClass: 'weight-dialog',
+      })
+      .afterClosed()
+      .subscribe((entry: Omit<WeightEntry, 'id'> | undefined) => {
+        if (entry) {
+          this.storageService.addEntry(entry);
+        }
+      });
+  }
+
+  openSportDialog(): void {
+    this.dialog
+      .open(SportDialogComponent, {
+        width: '100%',
+        maxWidth: '500px',
+        panelClass: 'sport-dialog',
+      })
+      .afterClosed()
+      .subscribe((entry: Omit<SportEntry, 'id'> | undefined) => {
+        if (entry) {
+          this.storageService.addEntry(entry);
+        }
+      });
+  }
 
   onFoodCaptured(entry: FoodEntry): void {
     this.storageService.addEntry(entry);
