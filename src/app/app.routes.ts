@@ -31,7 +31,16 @@ export const routes: Routes = [
     data: { title: 'Analytik', icon: 'bar_chart' },
   },
   {
+    path: 'schedule',
+    loadComponent: () =>
+      import('./components/schedule-management/schedule-management.component').then(
+        m => m.ScheduleManagementComponent
+      ),
+    data: { title: 'Zeitplan', icon: 'schedule' },
+  },
+  {
     path: '**',
     redirectTo: '/today',
   },
 ];
+

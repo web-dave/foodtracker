@@ -10,6 +10,7 @@ import { EntryFoodComponent } from './entry-items/entry-food.component';
 import { EntryWeightComponent } from './entry-items/entry-weight.component';
 import { EntrySportComponent } from './entry-items/entry-sport.component';
 import { EntryBloodPressureComponent } from './entry-items/entry-blood-pressure.component';
+import { ScheduledTasksComponent } from './scheduled-tasks/scheduled-tasks.component';
 import { FoodDialogComponent } from './dialogs/food-dialog.component';
 import { WeightDialogComponent } from './dialogs/weight-dialog.component';
 import { SportDialogComponent } from './dialogs/sport-dialog.component';
@@ -27,12 +28,15 @@ import { BloodPressureDialogComponent } from './dialogs/blood-pressure-dialog.co
     EntryWeightComponent,
     EntrySportComponent,
     EntryBloodPressureComponent,
+    ScheduledTasksComponent,
   ],
   template: `
     <div class="timeline-container">
       <div class="timeline-header">
         <h1>📅 {{ todayFormatted }}</h1>
       </div>
+
+      <app-scheduled-tasks />
 
       <div class="input-section">
         <button

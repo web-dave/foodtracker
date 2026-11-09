@@ -258,6 +258,7 @@ export class App {
     { label: 'Heute', route: '/today', icon: 'today' },
     { label: 'Kalender', route: '/calendar', icon: 'calendar_month' },
     { label: 'Analytik', route: '/analytics', icon: 'bar_chart' },
+    { label: 'Zeitplan', route: '/schedule', icon: 'schedule' },
   ];
 
   @ViewChild('sidenav') sidenav: any;
