@@ -1,9 +1,14 @@
-import { Component, output, signal, computed } from '@angular/core';
+import { Component, output, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { StorageService } from '../../services/storage.service';
+import { Entry } from '../../models/entries';
+import { DayDetailsDialogComponent } from './day-details-dialog.component';
 
 @Component({
   selector: 'app-calendar',
@@ -14,6 +19,8 @@ import { MatCardModule } from '@angular/material/card';
     MatButtonToggleModule,
     MatIconModule,
     MatCardModule,
+    MatDialogModule,
+    MatTooltipModule,
   ],
   template: `
     <div class="calendar-container">
@@ -49,20 +56,40 @@ import { MatCardModule } from '@angular/material/card';
 
           <!-- Month View -->
           @if (viewMode() === 'month') {
-            <div class="calendar-grid">
-              @for (day of weekDays; track day) {
-                <div class="weekday">{{ day }}</div>
-              }
-              @for (date of calendarDates(); track date.getTime()) {
+            <div class="month-view">
+              <!-- Day headers -->
+              <div class="day-header">So</div>
+              <div class="day-header">Mo</div>
+              <div class="day-header">Di</div>
+              <div class="day-header">Mi</div>
+              <div class="day-header">Do</div>
+              <div class="day-header">Fr</div>
+              <div class="day-header">Sa</div>
+
+              <!-- Calendar days -->
+              @for (date of monthDays(); track date.getTime()) {
                 <button
-                  mat-raised-button
-                  (click)="selectDate(date)"
-                  [class.other-month]="date.getMonth() !== currentDate().getMonth()"
-                  [class.selected]="isSelectedDate(date)"
+                  class="calendar-day"
+                  [class.other-month]="!isCurrentMonth(date)"
                   [class.today]="isToday(date)"
-                  class="date-btn"
+                  [class.has-entries]="hasEntries(date)"
+                  (click)="openDayDetails(date)"
+                  [matTooltip]="getDayTooltip(date)"
                 >
-                  {{ date.getDate() }}
+                  <span class="day-number">{{ date.getDate() }}</span>
+                  @if (hasEntries(date)) {
+                    <div class="entry-indicators">
+                      @if (getEntriesForDay(date).some(e => e.type === 'food')) {
+                        <span class="indicator food-indicator" title="Essen">🍽️</span>
+                      }
+                      @if (getEntriesForDay(date).some(e => e.type === 'weight')) {
+                        <span class="indicator weight-indicator" title="Gewicht">⚖️</span>
+                      }
+                      @if (getEntriesForDay(date).some(e => e.type === 'sport')) {
+                        <span class="indicator sport-indicator" title="Sport">🏃</span>
+                      }
+                    </div>
+                  }
                 </button>
               }
             </div>
@@ -70,53 +97,41 @@ import { MatCardModule } from '@angular/material/card';
 
           <!-- Week View -->
           @if (viewMode() === 'week') {
-            <div class="week-container">
-              <div class="week-navigation">
-                <button mat-icon-button (click)="previousWeek()" matTooltip="Vorherige Woche">
-                  <mat-icon>chevron_left</mat-icon>
-                </button>
-                <span class="week-range">{{ getWeekRange() }}</span>
-                <button mat-icon-button (click)="nextWeek()" matTooltip="Nächste Woche">
-                  <mat-icon>chevron_right</mat-icon>
-                </button>
-              </div>
-
-              <div class="week-grid">
-                @for (date of weekDates(); track date.getTime()) {
+            <div class="week-view">
+              @for (date of weekDays(); track date.getTime()) {
+                <div class="week-day" [class.is-today]="isToday(date)">
+                  <div class="week-day-header">
+                    <span class="day-name">{{ getDayName(date) }}</span>
+                    <span class="day-date">{{ date.getDate() }}</span>
+                  </div>
                   <button
-                    mat-raised-button
-                    (click)="selectDate(date)"
-                    [class.selected]="isSelectedDate(date)"
-                    [class.today]="isToday(date)"
-                    class="week-date-btn"
+                    mat-stroked-button
+                    class="week-day-btn"
+                    (click)="openDayDetails(date)"
+                    [class.has-entries]="hasEntries(date)"
                   >
-                    <div class="weekday-name">{{ getWeekDayName(date) }}</div>
-                    <div class="date-number">{{ date.getDate() }}</div>
+                    @if (getEntriesForDay(date).length > 0) {
+                      <div class="week-entries">
+                        <span class="entry-count">
+                          {{ getEntriesForDay(date).length }} Einträge
+                        </span>
+                        @if (getEntriesForDay(date).some(e => e.type === 'food')) {
+                          <span>🍽️</span>
+                        }
+                        @if (getEntriesForDay(date).some(e => e.type === 'weight')) {
+                          <span>⚖️</span>
+                        }
+                        @if (getEntriesForDay(date).some(e => e.type === 'sport')) {
+                          <span>🏃</span>
+                        }
+                      </div>
+                    } @else {
+                      <span>Keine Einträge</span>
+                    }
                   </button>
-                }
-              </div>
-            </div>
-          }
-
-          <!-- Selected Date Display -->
-          @if (selectedDate()) {
-            <mat-card class="selected-date-card">
-              <mat-card-content>
-                <div class="selected-date-content">
-                  <span class="selected-label">Ausgewählter Tag:</span>
-                  <span class="selected-date">{{ formatDate(selectedDate()!) }}</span>
                 </div>
-                <button
-                  mat-raised-button
-                  color="accent"
-                  (click)="viewDetails()"
-                  class="details-btn"
-                >
-                  <mat-icon>info</mat-icon>
-                  Details anzeigen
-                </button>
-              </mat-card-content>
-            </mat-card>
+              }
+            </div>
           }
         </mat-card-content>
       </mat-card>
@@ -147,18 +162,14 @@ import { MatCardModule } from '@angular/material/card';
 
       h2 {
         margin: 0;
-        font-size: 24px;
         flex: 1;
         text-align: center;
-        color: #333;
+        font-size: 20px;
+        font-weight: 500;
       }
 
       button {
-        color: #667eea;
-
-        &:hover {
-          background-color: rgba(102, 126, 234, 0.1);
-        }
+        padding: 8px;
       }
     }
 
@@ -174,391 +185,338 @@ import { MatCardModule } from '@angular/material/card';
       mat-button-toggle-group {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
-
-      mat-button-toggle {
-        &.mat-button-toggle-checked {
-          background-color: rgba(102, 126, 234, 0.1);
-          color: #667eea;
-        }
-      }
     }
 
-    .calendar-grid {
+    /* Month View */
+    .month-view {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 8px;
-      margin-bottom: 24px;
+
+      @media (min-width: 768px) {
+        gap: 12px;
+      }
     }
 
-    .weekday {
+    .day-header {
       text-align: center;
       font-weight: 600;
-      color: #667eea;
-      font-size: 14px;
-      padding: 12px 0;
+      color: #666;
+      padding: 8px;
+      font-size: 12px;
+
+      @media (min-width: 768px) {
+        font-size: 14px;
+        padding: 12px;
+      }
     }
 
-    .date-btn {
+    .calendar-day {
       aspect-ratio: 1;
+      border: 2px solid rgba(0, 0, 0, 0.1);
       border-radius: 8px;
-      border: 2px solid rgba(0, 0, 0, 0.12);
+      padding: 4px;
       background: white;
-      color: #333;
-      font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &:hover:not(.other-month) {
-        border-color: #667eea;
-        background-color: rgba(102, 126, 234, 0.05);
-      }
-
-      &.other-month {
-        color: #ccc;
-        cursor: not-allowed;
-      }
-
-      &.today {
-        border-color: #667eea;
-        background-color: rgba(102, 126, 234, 0.15);
-        color: #667eea;
-        font-weight: 700;
-      }
-
-      &.selected {
-        background-color: #667eea;
-        color: white;
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      }
-    }
-
-    .week-container {
-      margin-bottom: 24px;
-    }
-
-    .week-navigation {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      padding: 16px;
-      background: #f5f5f5;
-      border-radius: 8px;
-
-      .week-range {
-        font-size: 16px;
-        font-weight: 500;
-        color: #333;
-      }
-
-      button {
-        color: #667eea;
-
-        &:hover {
-          background-color: rgba(102, 126, 234, 0.1);
-        }
-      }
-    }
-
-    .week-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 12px;
-    }
-
-    .week-date-btn {
-      aspect-ratio: 1;
-      border-radius: 8px;
-      border: 2px solid rgba(0, 0, 0, 0.12);
-      background: white;
-      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      padding: 8px;
-      text-align: center;
+      justify-content: flex-start;
+      gap: 2px;
+      font-size: 12px;
+      color: #333;
+      position: relative;
+
+      @media (min-width: 768px) {
+        font-size: 14px;
+        padding: 8px;
+        gap: 4px;
+      }
 
       &:hover {
         border-color: #667eea;
-        background-color: rgba(102, 126, 234, 0.05);
+        background: rgba(102, 126, 234, 0.05);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+      }
+
+      &.other-month {
+        opacity: 0.4;
+        background: #f9f9f9;
       }
 
       &.today {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
         border-color: #667eea;
-        background-color: rgba(102, 126, 234, 0.15);
-
-        .date-number {
-          color: #667eea;
-          font-weight: 700;
-        }
-      }
-
-      &.selected {
-        background-color: #667eea;
-        color: white;
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-
-        .date-number {
-          color: white;
-          font-weight: 700;
-        }
-      }
-
-      .weekday-name {
-        font-size: 12px;
-        color: #999;
-        font-weight: 500;
-      }
-
-      .date-number {
-        font-size: 16px;
         font-weight: 600;
+        color: #667eea;
+      }
+
+      &.has-entries {
+        background: linear-gradient(135deg, rgba(67, 233, 123, 0.08) 0%, rgba(56, 249, 215, 0.05) 100%);
+        border-color: #43e97b;
+      }
+
+      .day-number {
+        font-weight: 600;
+      }
+
+      .entry-indicators {
+        display: flex;
+        gap: 2px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .indicator {
+        font-size: 10px;
+        line-height: 1;
+
+        @media (min-width: 768px) {
+          font-size: 12px;
+        }
       }
     }
 
-    .selected-date-card {
-      margin-top: 24px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      border-left: 4px solid #667eea;
+    /* Week View */
+    .week-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
 
-      mat-card-content {
-        padding: 20px;
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 16px;
+      }
+    }
+
+    .week-day {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      &.is-today {
+        .week-day-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 4px;
+        }
+      }
+    }
+
+    .week-day-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.04);
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
+      .day-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+      }
+
+      .day-date {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+      }
+    }
+
+    .week-day-btn {
+      min-height: 80px;
+      border-radius: 8px;
+      padding: 12px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 12px;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      &.has-entries {
+        border-color: #43e97b;
+        background: linear-gradient(135deg, rgba(67, 233, 123, 0.08) 0%, rgba(56, 249, 215, 0.05) 100%);
+      }
+
+      .week-entries {
         display: flex;
         flex-direction: column;
-        gap: 16px;
         align-items: center;
+        gap: 6px;
+        width: 100%;
       }
 
-      .selected-date-content {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
-        justify-content: center;
-        flex-wrap: wrap;
-
-        .selected-label {
-          font-size: 14px;
-          color: #666;
-          font-weight: 500;
-        }
-
-        .selected-date {
-          font-size: 18px;
-          font-weight: 600;
-          color: #667eea;
-        }
-      }
-
-      .details-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .entry-count {
+        font-weight: 600;
+        color: #333;
       }
     }
 
     @media (max-width: 600px) {
-      .calendar-container {
+      mat-card-content {
         padding: 12px;
       }
 
-      .calendar-header {
-        flex-direction: column;
-        gap: 12px;
-
-        h2 {
-          font-size: 20px;
-        }
+      .calendar-day {
+        font-size: 11px;
       }
 
-      .calendar-grid {
-        gap: 4px;
+      .week-view {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       }
 
-      .date-btn {
-        font-size: 12px;
+      .week-day-header {
+        padding: 8px;
       }
 
-      .week-grid {
-        gap: 8px;
-      }
-
-      .week-date-btn {
-        font-size: 12px;
-
-        .weekday-name {
-          font-size: 10px;
-        }
-
-        .date-number {
-          font-size: 14px;
-        }
-      }
-
-      .selected-date-card mat-card-content {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .selected-date-content {
-        flex-direction: column;
+      .week-day-btn {
+        min-height: 70px;
+        font-size: 11px;
       }
     }
   `,
 })
 export class CalendarComponent {
-  private today = new Date();
-  currentDate = signal(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
-  selectedDate = signal<Date | null>(null);
+  private dialog = inject(MatDialog);
+  private storageService = inject(StorageService);
+
+  currentDate = signal(new Date());
   viewMode = signal<'month' | 'week'>('month');
 
-  weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-  dateSelected = output<Date>();
-
-  currentYear = computed(() => this.currentDate().getFullYear());
   monthName = computed(() => {
     const months = [
-      'Januar',
-      'Februar',
-      'März',
-      'April',
-      'Mai',
-      'Juni',
-      'Juli',
-      'August',
-      'September',
-      'Oktober',
-      'November',
-      'Dezember',
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
     ];
     return months[this.currentDate().getMonth()];
   });
 
-  calendarDates = computed(() => {
-    const date = new Date(this.currentDate());
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  currentYear = computed(() => this.currentDate().getFullYear());
 
+  monthDays = computed(() => {
+    const date = new Date(this.currentDate());
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-    const dates: Date[] = [];
-    let current = new Date(startDate);
+    const days: Date[] = [];
+    const current = new Date(startDate);
 
-    while (current <= lastDay || dates.length < 42) {
-      dates.push(new Date(current));
+    while (current <= lastDay || current.getDay() !== 0) {
+      days.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
 
-    return dates;
+    return days;
   });
 
-  weekDates = computed(() => {
-    const date = new Date(this.currentDate());
-    const dayOfWeek = date.getDay();
-    const startDate = new Date(date);
-    startDate.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+  weekDays = computed(() => {
+    const today = new Date(this.currentDate());
+    const currentDay = today.getDay();
+    const diff = today.getDate() - currentDay;
+    const monday = new Date(today.setDate(diff));
 
-    const dates: Date[] = [];
+    const days: Date[] = [];
     for (let i = 0; i < 7; i++) {
-      const day = new Date(startDate);
-      day.setDate(startDate.getDate() + i);
-      dates.push(day);
+      const day = new Date(monday);
+      day.setDate(day.getDate() + i);
+      days.push(day);
     }
 
-    return dates;
+    return days;
   });
 
   previousMonth(): void {
-    this.currentDate.update(date => {
-      const newDate = new Date(date);
-      newDate.setMonth(newDate.getMonth() - 1);
-      return newDate;
-    });
+    const date = new Date(this.currentDate());
+    date.setMonth(date.getMonth() - 1);
+    this.currentDate.set(date);
   }
 
   nextMonth(): void {
-    this.currentDate.update(date => {
-      const newDate = new Date(date);
-      newDate.setMonth(newDate.getMonth() + 1);
-      return newDate;
-    });
-  }
-
-  previousWeek(): void {
-    this.currentDate.update(date => {
-      const newDate = new Date(date);
-      newDate.setDate(newDate.getDate() - 7);
-      return newDate;
-    });
-  }
-
-  nextWeek(): void {
-    this.currentDate.update(date => {
-      const newDate = new Date(date);
-      newDate.setDate(newDate.getDate() + 7);
-      return newDate;
-    });
-  }
-
-  selectDate(date: Date): void {
-    this.selectedDate.set(date);
-    this.dateSelected.emit(date);
-  }
-
-  isSelectedDate(date: Date): boolean {
-    const selected = this.selectedDate();
-    if (!selected) return false;
-    return this.isSameDay(date, selected);
-  }
-
-  isToday(date: Date): boolean {
-    return this.isSameDay(date, new Date());
+    const date = new Date(this.currentDate());
+    date.setMonth(date.getMonth() + 1);
+    this.currentDate.set(date);
   }
 
   setViewMode(mode: 'month' | 'week'): void {
     this.viewMode.set(mode);
   }
 
-  getWeekDayName(date: Date): string {
-    return this.weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1];
+  isCurrentMonth(date: Date): boolean {
+    return date.getMonth() === this.currentDate().getMonth();
   }
 
-  getWeekRange(): string {
-    const dates = this.weekDates();
-    const start = dates[0];
-    const end = dates[6];
-    return `${start.getDate()}. - ${end.getDate()}. ${this.monthName()}`;
+  isToday(date: Date): boolean {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
   }
 
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('de-DE', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+  getDayName(date: Date): string {
+    const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    return days[date.getDay()];
+  }
+
+  hasEntries(date: Date): boolean {
+    return this.getEntriesForDay(date).length > 0;
+  }
+
+  getEntriesForDay(date: Date): Entry[] {
+    const entries = this.storageService.getEntries();
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return (
+        entryDate.getDate() === date.getDate() &&
+        entryDate.getMonth() === date.getMonth() &&
+        entryDate.getFullYear() === date.getFullYear()
+      );
     });
   }
 
-  viewDetails(): void {
-    if (this.selectedDate()) {
-      console.log('Show details for:', this.selectedDate());
+  getDayTooltip(date: Date): string {
+    const entries = this.getEntriesForDay(date);
+    if (entries.length === 0) {
+      return 'Keine Einträge';
     }
+    const foodCount = entries.filter(e => e.type === 'food').length;
+    const weightCount = entries.filter(e => e.type === 'weight').length;
+    const sportCount = entries.filter(e => e.type === 'sport').length;
+
+    const parts: string[] = [];
+    if (foodCount > 0) parts.push(`${foodCount} Essen`);
+    if (weightCount > 0) parts.push(`${weightCount} Gewicht`);
+    if (sportCount > 0) parts.push(`${sportCount} Sport`);
+
+    return parts.join(', ');
   }
 
-  private isSameDay(date1: Date, date2: Date): boolean {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
-    );
+  openDayDetails(date: Date): void {
+    const entries = this.getEntriesForDay(date);
+    this.dialog.open(DayDetailsDialogComponent, {
+      width: '100%',
+      maxWidth: '600px',
+      maxHeight: '90vh',
+      data: {
+        date,
+        entries,
+      },
+      panelClass: 'day-details-dialog',
+    });
   }
 }

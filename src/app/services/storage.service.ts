@@ -10,6 +10,10 @@ export class StorageService {
 
   readonly entries$ = this.entries.asReadonly();
 
+  getEntries(): Entry[] {
+    return this.entries();
+  }
+
   getEntriesByDate(date: Date): Entry[] {
     const dateStr = this.formatDate(date);
     return this.entries().filter(
