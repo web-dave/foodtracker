@@ -1,5 +1,8 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { StorageService } from '../services/storage.service';
 import { Entry, FoodEntry, WeightEntry, SportEntry } from '../models/entries';
 import { FoodCaptureComponent } from './food-capture/food-capture.component';
@@ -14,6 +17,9 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
   standalone: true,
   imports: [
     CommonModule,
+    MatCardModule,
+    MatIconModule,
+    MatButtonModule,
     FoodCaptureComponent,
     WeightInputComponent,
     SportInputComponent,
@@ -23,7 +29,9 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
   ],
   template: `
     <div class="timeline-container">
-      <h1>{{ todayFormatted }}</h1>
+      <div class="timeline-header">
+        <h1>📅 {{ todayFormatted }}</h1>
+      </div>
 
       <div class="input-section">
         <app-food-capture (foodCaptured)="onFoodCaptured($event)" />
@@ -33,51 +41,68 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
 
       <div class="timeline-entries">
         @if (todayEntries().length === 0) {
-          <div class="empty-state">
-            <p>Noch keine Einträge für heute</p>
-          </div>
+          <mat-card class="empty-state-card">
+            <p>📭 Noch keine Einträge für heute</p>
+          </mat-card>
         }
 
         @for (entry of todayEntries(); track entry.id) {
-          <div class="timeline-entry">
-            <div class="entry-time">{{ getFormattedTime(entry.timestamp) }}</div>
+          <mat-card class="timeline-entry">
+            <mat-card-content>
+              <div class="entry-time">⏰ {{ getFormattedTime(entry.timestamp) }}</div>
 
-            @if (entry.type === 'food') {
-              <app-entry-food [entry]="castToFoodEntry(entry)" />
-            }
-            @if (entry.type === 'weight') {
-              <app-entry-weight [entry]="castToWeightEntry(entry)" />
-            }
-            @if (entry.type === 'sport') {
-              <app-entry-sport [entry]="castToSportEntry(entry)" />
-            }
-
-            <button class="delete-btn" (click)="deleteEntry(entry.id)">×</button>
-          </div>
+              @if (entry.type === 'food') {
+                <app-entry-food [entry]="castToFoodEntry(entry)" />
+              }
+              @if (entry.type === 'weight') {
+                <app-entry-weight [entry]="castToWeightEntry(entry)" />
+              }
+              @if (entry.type === 'sport') {
+                <app-entry-sport [entry]="castToSportEntry(entry)" />
+              }
+            </mat-card-content>
+            <mat-card-actions>
+              <button
+                mat-icon-button
+                (click)="deleteEntry(entry.id)"
+                color="warn"
+                class="delete-btn"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-card-actions>
+          </mat-card>
         }
       </div>
     </div>
   `,
   styles: `
     .timeline-container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 24px;
+      min-height: 100%;
+    }
+
+    .timeline-header {
+      margin-bottom: 32px;
+      text-align: center;
 
       h1 {
-        text-align: center;
-        margin-bottom: 30px;
+        font-size: 32px;
         color: #333;
+        margin: 0;
+        font-weight: 300;
       }
     }
 
     .input-section {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
       margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid #eee;
+      padding-bottom: 24px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.08);
     }
 
     .timeline-entries {
@@ -86,64 +111,66 @@ import { EntrySportComponent } from './entry-items/entry-sport.component';
       gap: 20px;
     }
 
-    .empty-state {
+    .empty-state-card {
       text-align: center;
-      padding: 40px 20px;
-      color: #999;
-      font-size: 16px;
+      padding: 48px 24px;
+      background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+      border-left: 4px solid #bdbdbd;
+
+      p {
+        font-size: 18px;
+        color: #999;
+        margin: 0;
+      }
     }
 
     .timeline-entry {
-      border-left: 4px solid #4CAF50;
-      background: #f9f9f9;
-      padding: 16px;
-      border-radius: 4px;
-      position: relative;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
       transition: all 0.2s ease;
 
       &:hover {
-        background: #f0f0f0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+      }
+
+      mat-card-content {
+        padding: 16px;
+      }
+
+      mat-card-actions {
+        padding: 8px 16px;
+        display: flex;
+        justify-content: flex-end;
       }
     }
 
     .entry-time {
       font-size: 12px;
-      color: #666;
-      margin-bottom: 8px;
+      color: #999;
+      margin-bottom: 12px;
       font-weight: 500;
     }
 
     .delete-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: #ff5252;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      cursor: pointer;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-
       &:hover {
-        background: #ff1744;
-        transform: scale(1.1);
+        background-color: rgba(244, 67, 54, 0.1);
       }
     }
 
     @media (max-width: 600px) {
-      .input-section {
-        grid-template-columns: 1fr;
+      .timeline-container {
+        padding: 16px;
       }
 
-      .timeline-entry {
-        padding-right: 40px;
+      .timeline-header h1 {
+        font-size: 24px;
+      }
+
+      .input-section {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
       }
     }
   `,
