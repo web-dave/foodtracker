@@ -19,6 +19,9 @@ import { FoodEntry } from '../../models/entries';
         (foodEntryCreated)="onFoodEntryCreated($event)"
       />
     </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Abbrechen</button>
+    </mat-dialog-actions>
   `,
   styles: `
     mat-dialog-content {
