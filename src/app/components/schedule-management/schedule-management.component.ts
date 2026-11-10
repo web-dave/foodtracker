@@ -11,7 +11,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ScheduleService } from '../../services/schedule.service';
+import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
 import { Schedule, ScheduleEntryType, DayOfWeek } from '../../models/schedule';
 import { AddScheduleDialogComponent } from './add-schedule-dialog.component';
 
@@ -31,6 +33,7 @@ import { AddScheduleDialogComponent } from './add-schedule-dialog.component';
     MatChipsModule,
     MatTooltipModule,
     MatDialogModule,
+    MatSnackBarModule,
   ],
   template: `
     <div class="schedule-container">
@@ -278,6 +281,7 @@ import { AddScheduleDialogComponent } from './add-schedule-dialog.component';
 export class ScheduleManagementComponent {
   private scheduleService = inject(ScheduleService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   schedules = computed(() =>
     this.scheduleService.getSchedules().sort((a, b) => {
@@ -311,9 +315,22 @@ export class ScheduleManagementComponent {
   }
 
   deleteSchedule(id: string): void {
-    if (confirm('Möchten Sie diesen Zeitplan wirklich löschen?')) {
-      this.scheduleService.deleteSchedule(id);
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Zeitplan löschen',
+        message: 'Möchten Sie diesen Zeitplan wirklich löschen?',
+        confirmText: 'Löschen',
+        cancelText: 'Abbrechen',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean | undefined) => {
+      if (confirmed) {
+        this.scheduleService.deleteSchedule(id);
+        this.snackBar.open('Zeitplan gelöscht', 'OK', { duration: 2500 });
+      }
+    });
   }
 
   getEntryTypeLabel(type: ScheduleEntryType): string {

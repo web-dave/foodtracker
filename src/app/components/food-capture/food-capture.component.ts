@@ -11,6 +11,7 @@ import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
@@ -34,6 +35,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
     MatIconModule,
     MatProgressSpinnerModule,
     MatCardModule,
+    MatSnackBarModule,
   ],
   template: `
     <mat-card class="food-capture-card">
@@ -527,6 +529,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
 })
 export class FoodCaptureComponent {
   private nutritionService = inject(NutritionAnalysisService);
+  private snackBar = inject(MatSnackBar);
 
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -565,7 +568,9 @@ export class FoodCaptureComponent {
       }
     } catch (error) {
       console.error('Kamerafehler:', error);
-      alert('Kamera konnte nicht gestartet werden');
+      this.snackBar.open('Kamera konnte nicht gestartet werden', 'OK', {
+        duration: 3000,
+      });
     }
   }
 
@@ -625,7 +630,9 @@ export class FoodCaptureComponent {
       }
     } catch (error) {
       console.error('Analysefehler:', error);
-      alert('Analyse konnte nicht durchgeführt werden');
+      this.snackBar.open('Analyse konnte nicht durchgeführt werden', 'OK', {
+        duration: 3000,
+      });
     } finally {
       this.isAnalyzing.set(false);
     }

@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { StorageService } from '../services/storage.service';
 import { Entry, FoodEntry, WeightEntry, SportEntry, BloodPressureEntry } from '../models/entries';
 import { EntryFoodComponent } from './entry-items/entry-food.component';
@@ -15,6 +16,7 @@ import { FoodDialogComponent } from './dialogs/food-dialog.component';
 import { WeightDialogComponent } from './dialogs/weight-dialog.component';
 import { SportDialogComponent } from './dialogs/sport-dialog.component';
 import { BloodPressureDialogComponent } from './dialogs/blood-pressure-dialog.component';
+import { ConfirmDialogComponent } from './dialogs/confirm-dialog.component';
 
 @Component({
   selector: 'app-timeline',
@@ -24,6 +26,7 @@ import { BloodPressureDialogComponent } from './dialogs/blood-pressure-dialog.co
     MatCardModule,
     MatIconModule,
     MatButtonModule,
+    MatSnackBarModule,
     EntryFoodComponent,
     EntryWeightComponent,
     EntrySportComponent,
@@ -278,6 +281,7 @@ import { BloodPressureDialogComponent } from './dialogs/blood-pressure-dialog.co
 export class TimelineComponent implements OnInit {
   private storageService = inject(StorageService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   todayEntries = computed(() => {
     const today = new Date();
@@ -370,9 +374,24 @@ export class TimelineComponent implements OnInit {
   }
 
   deleteEntry(id: string): void {
-    if (confirm('Möchten Sie diesen Eintrag wirklich löschen?')) {
-      this.storageService.deleteEntry(id);
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Eintrag löschen',
+        message: 'Möchten Sie diesen Eintrag wirklich löschen?',
+        confirmText: 'Löschen',
+        cancelText: 'Abbrechen',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean | undefined) => {
+      if (confirmed) {
+        this.storageService.deleteEntry(id);
+        this.snackBar.open('Eintrag gelöscht', 'OK', {
+          duration: 2500,
+        });
+      }
+    });
   }
 
   getFormattedTime(timestamp: Date): string {
