@@ -111,6 +111,15 @@ import { ConfirmDialogComponent } from './dialogs/confirm-dialog.component';
             <mat-card-actions>
               <button
                 mat-icon-button
+                (click)="editEntry(entry)"
+                color="primary"
+                aria-label="Eintrag bearbeiten"
+                class="edit-btn"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
                 (click)="deleteEntry(entry.id)"
                 color="warn"
                 class="delete-btn"
@@ -251,6 +260,13 @@ import { ConfirmDialogComponent } from './dialogs/confirm-dialog.component';
         padding: 8px 16px;
         display: flex;
         justify-content: flex-end;
+        gap: 8px;
+      }
+    }
+
+    .edit-btn {
+      &:hover {
+        background-color: rgba(63, 81, 181, 0.1);
       }
     }
 
@@ -301,63 +317,118 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  openFoodDialog(): void {
+  editEntry(entry: Entry): void {
+    switch (entry.type) {
+      case 'food':
+        this.openFoodDialog(entry as FoodEntry);
+        return;
+      case 'weight':
+        this.openWeightDialog(entry as WeightEntry);
+        return;
+      case 'sport':
+        this.openSportDialog(entry as SportEntry);
+        return;
+      case 'blood-pressure':
+        this.openBloodPressureDialog(entry as BloodPressureEntry);
+        return;
+      default:
+        return;
+    }
+  }
+
+  openFoodDialog(entry?: FoodEntry): void {
     this.dialog
       .open(FoodDialogComponent, {
         width: '100%',
         maxWidth: '500px',
         panelClass: 'food-dialog',
+        data: entry ?? null,
       })
       .afterClosed()
-      .subscribe((entry: FoodEntry | undefined) => {
+      .subscribe((savedEntry: FoodEntry | undefined) => {
+        if (!savedEntry) return;
+
         if (entry) {
-          this.storageService.addEntry(entry);
+          this.storageService.updateEntry(entry.id, {
+            ...savedEntry,
+            id: entry.id,
+          } as Partial<Entry>);
+          return;
         }
+
+        this.storageService.addEntry(savedEntry);
       });
   }
 
-  openWeightDialog(): void {
+  openWeightDialog(entry?: WeightEntry): void {
     this.dialog
       .open(WeightDialogComponent, {
         width: '100%',
         maxWidth: '500px',
         panelClass: 'weight-dialog',
+        data: entry ?? null,
       })
       .afterClosed()
-      .subscribe((entry: Omit<WeightEntry, 'id'> | undefined) => {
+      .subscribe((savedEntry: Omit<WeightEntry, 'id'> | undefined) => {
+        if (!savedEntry) return;
+
         if (entry) {
-          this.storageService.addEntry(entry);
+          this.storageService.updateEntry(entry.id, {
+            ...savedEntry,
+            id: entry.id,
+          } as Partial<Entry>);
+          return;
         }
+
+        this.storageService.addEntry(savedEntry as Omit<Entry, 'id'>);
       });
   }
 
-  openSportDialog(): void {
+  openSportDialog(entry?: SportEntry): void {
     this.dialog
       .open(SportDialogComponent, {
         width: '100%',
         maxWidth: '500px',
         panelClass: 'sport-dialog',
+        data: entry ?? null,
       })
       .afterClosed()
-      .subscribe((entry: Omit<SportEntry, 'id'> | undefined) => {
+      .subscribe((savedEntry: Omit<SportEntry, 'id'> | undefined) => {
+        if (!savedEntry) return;
+
         if (entry) {
-          this.storageService.addEntry(entry);
+          this.storageService.updateEntry(entry.id, {
+            ...savedEntry,
+            id: entry.id,
+          } as Partial<Entry>);
+          return;
         }
+
+        this.storageService.addEntry(savedEntry as Omit<Entry, 'id'>);
       });
   }
 
-  openBloodPressureDialog(): void {
+  openBloodPressureDialog(entry?: BloodPressureEntry): void {
     this.dialog
       .open(BloodPressureDialogComponent, {
         width: '100%',
         maxWidth: '500px',
         panelClass: 'blood-pressure-dialog',
+        data: entry ?? null,
       })
       .afterClosed()
-      .subscribe((entry: Omit<BloodPressureEntry, 'id'> | undefined) => {
+      .subscribe((savedEntry: Omit<BloodPressureEntry, 'id'> | undefined) => {
+        if (!savedEntry) return;
+
         if (entry) {
-          this.storageService.addEntry(entry);
+          this.storageService.updateEntry(entry.id, {
+            ...savedEntry,
+            id: entry.id,
+          } as Partial<Entry>);
+          return;
         }
+
+        this.storageService.addEntry(savedEntry as Omit<Entry, 'id'>);
       });
   }
 

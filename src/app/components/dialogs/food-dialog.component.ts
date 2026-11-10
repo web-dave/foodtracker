@@ -1,5 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { FoodCaptureComponent } from '../food-capture/food-capture.component';
 import { FoodEntry } from '../../models/entries';
 
@@ -8,9 +12,12 @@ import { FoodEntry } from '../../models/entries';
   standalone: true,
   imports: [MatDialogModule, FoodCaptureComponent],
   template: `
-    <h2 mat-dialog-title>🍽️ Essen erfassen</h2>
+    <h2 mat-dialog-title>{{ isEditMode ? '🍽️ Essen bearbeiten' : '🍽️ Essen erfassen' }}</h2>
     <mat-dialog-content>
-      <app-food-capture (foodEntryCreated)="onFoodEntryCreated($event)" />
+      <app-food-capture
+        [entry]="entry"
+        (foodEntryCreated)="onFoodEntryCreated($event)"
+      />
     </mat-dialog-content>
   `,
   styles: `
@@ -27,6 +34,11 @@ import { FoodEntry } from '../../models/entries';
 })
 export class FoodDialogComponent {
   private dialogRef = inject(MatDialogRef<FoodDialogComponent>);
+  readonly entry = inject<FoodEntry | null>(MAT_DIALOG_DATA, { optional: true });
+
+  get isEditMode(): boolean {
+    return !!this.entry;
+  }
 
   onFoodEntryCreated(entry: FoodEntry): void {
     this.dialogRef.close(entry);

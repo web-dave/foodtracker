@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -171,7 +171,8 @@ import { SportEntry } from '../../models/entries';
     }
   `,
 })
-export class SportInputComponent {
+export class SportInputComponent implements OnInit {
+  entry = input<SportEntry | null>(null);
   sportAdded = output<Omit<SportEntry, 'id'>>();
 
   activity = '';
@@ -180,12 +181,23 @@ export class SportInputComponent {
   caloriesBurned = 0;
   notes = '';
 
+  ngOnInit(): void {
+    const initialEntry = this.entry();
+    if (initialEntry) {
+      this.activity = initialEntry.activity;
+      this.duration = initialEntry.duration;
+      this.intensity = initialEntry.intensity;
+      this.caloriesBurned = initialEntry.caloriesBurned ?? 0;
+      this.notes = initialEntry.notes ?? '';
+    }
+  }
+
   submit(): void {
     if (!this.activity.trim() || !this.duration || this.duration <= 0) return;
 
     const entry: Omit<SportEntry, 'id'> = {
       type: 'sport',
-      timestamp: new Date(),
+      timestamp: this.entry()?.timestamp ?? new Date(),
       activity: this.activity,
       duration: this.duration,
       intensity: this.intensity,

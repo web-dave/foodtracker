@@ -1,5 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { WeightInputComponent } from '../weight-input/weight-input.component';
 import { WeightEntry } from '../../models/entries';
 
@@ -8,9 +12,9 @@ import { WeightEntry } from '../../models/entries';
   standalone: true,
   imports: [MatDialogModule, WeightInputComponent],
   template: `
-    <h2 mat-dialog-title>⚖️ Gewicht erfassen</h2>
+    <h2 mat-dialog-title>{{ isEditMode ? '⚖️ Gewicht bearbeiten' : '⚖️ Gewicht erfassen' }}</h2>
     <mat-dialog-content>
-      <app-weight-input (weightAdded)="onWeightAdded($event)" />
+      <app-weight-input [entry]="entry" (weightAdded)="onWeightAdded($event)" />
     </mat-dialog-content>
   `,
   styles: `
@@ -27,6 +31,11 @@ import { WeightEntry } from '../../models/entries';
 })
 export class WeightDialogComponent {
   private dialogRef = inject(MatDialogRef<WeightDialogComponent>);
+  readonly entry = inject<WeightEntry | null>(MAT_DIALOG_DATA, { optional: true });
+
+  get isEditMode(): boolean {
+    return !!this.entry;
+  }
 
   onWeightAdded(entry: Omit<WeightEntry, 'id'>): void {
     this.dialogRef.close(entry);
