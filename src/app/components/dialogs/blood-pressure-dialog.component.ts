@@ -19,6 +19,9 @@ import { BloodPressureEntry } from '../../models/entries';
         (bloodPressureAdded)="onBloodPressureAdded($event)"
       />
     </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Abbrechen</button>
+    </mat-dialog-actions>
   `,
   styles: `
     mat-dialog-content {
