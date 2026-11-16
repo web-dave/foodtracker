@@ -1,23 +1,20 @@
 import { Component, inject } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { SportInputComponent } from '../sport-input/sport-input.component';
 import { SportEntry } from '../../models/entries';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-sport-dialog',
   standalone: true,
-  imports: [MatDialogModule, SportInputComponent],
+  imports: [MatDialogModule, SportInputComponent, MatIcon],
   template: `
     <h2 mat-dialog-title>{{ isEditMode ? '🏃 Sport bearbeiten' : '🏃 Sport erfassen' }}</h2>
     <mat-dialog-content>
       <app-sport-input [entry]="entry" (sportAdded)="onSportAdded($event)" />
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Abbrechen</button>
+      <mat-icon mat-dialog-close>delete</mat-icon>
     </mat-dialog-actions>
   `,
   styles: `

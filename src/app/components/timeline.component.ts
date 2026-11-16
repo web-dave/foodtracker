@@ -36,36 +36,21 @@ import { ConfirmDialogComponent } from './dialogs/confirm-dialog.component';
   template: `
     <div class="timeline-container">
       <div class="timeline-header">
-        <h1>📅 {{ todayFormatted }}</h1>
+        <h1>{{ todayFormatted }}</h1>
       </div>
 
       <app-scheduled-tasks />
 
       <div class="input-section">
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="openFoodDialog()"
-          class="action-button"
-        >
+        <button mat-raised-button color="primary" (click)="openFoodDialog()" class="action-button">
           <mat-icon>restaurant</mat-icon>
           <span>Essen</span>
         </button>
-        <button
-          mat-raised-button
-          color="accent"
-          (click)="openWeightDialog()"
-          class="action-button"
-        >
+        <button mat-raised-button color="accent" (click)="openWeightDialog()" class="action-button">
           <mat-icon>scale</mat-icon>
           <span>Gewicht</span>
         </button>
-        <button
-          mat-raised-button
-          color="warn"
-          (click)="openSportDialog()"
-          class="action-button"
-        >
+        <button mat-raised-button color="warn" (click)="openSportDialog()" class="action-button">
           <mat-icon>directions_run</mat-icon>
           <span>Sport</span>
         </button>
