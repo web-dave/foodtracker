@@ -41,7 +41,7 @@ import { Entry } from '../../models/entries';
       </mat-card>
 
       <!-- Nutrition Summary -->
-      <mat-card class="section-card">
+      <!-- <mat-card class="section-card">
         <mat-card-title>🥗 Ernährung</mat-card-title>
         <mat-card-content>
           <div class="stats-grid">
@@ -75,7 +75,7 @@ import { Entry } from '../../models/entries';
             </mat-card>
           </div>
         </mat-card-content>
-      </mat-card>
+      </mat-card> -->
 
       <!-- Weight Tracking -->
       <mat-card class="section-card">
@@ -89,16 +89,41 @@ import { Entry } from '../../models/entries';
           }
           @if (weightCount() > 0) {
             <div class="weight-chart-wrapper" aria-label="Gewichtsverlauf Diagramm">
-              <svg class="weight-chart" viewBox="0 0 420 180" preserveAspectRatio="none" role="img" aria-label="Gewichtsverlauf">
+              <svg
+                class="weight-chart"
+                viewBox="0 0 420 180"
+                preserveAspectRatio="none"
+                role="img"
+                aria-label="Gewichtsverlauf"
+              >
                 <path class="weight-chart-line" [attr.d]="getWeightChartPath()"></path>
                 @for (point of getWeightChartPoints(); track point.x; let i = $index) {
-                  <circle class="weight-chart-point" [attr.cx]="point.x" [attr.cy]="point.y" r="4"></circle>
+                  <circle
+                    class="weight-chart-point"
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    r="4"
+                  ></circle>
                 }
                 @for (label of getWeightChartDateLabels(); track label.x) {
-                  <text class="weight-chart-date-label" [attr.x]="label.x" [attr.y]="label.y" text-anchor="middle">{{ label.text }}</text>
+                  <text
+                    class="weight-chart-date-label"
+                    [attr.x]="label.x"
+                    [attr.y]="label.y"
+                    text-anchor="middle"
+                  >
+                    {{ label.text }}
+                  </text>
                 }
                 @for (label of getWeightChartValueLabels(); track label.x) {
-                  <text class="weight-chart-value-label" [attr.x]="label.x" [attr.y]="label.y" text-anchor="middle">{{ label.text }}</text>
+                  <text
+                    class="weight-chart-value-label"
+                    [attr.x]="label.x"
+                    [attr.y]="label.y"
+                    text-anchor="middle"
+                  >
+                    {{ label.text }}
+                  </text>
                 }
               </svg>
             </div>
@@ -106,7 +131,7 @@ import { Entry } from '../../models/entries';
               <span class="weight-loss-label">Gewichtsverlust</span>
               <span class="weight-loss-value">{{ getWeightLossText() }}</span>
             </div>
-            <div class="stats-grid">
+            <!-- <div class="stats-grid">
               <mat-card class="stat-card stat-card-1">
                 <mat-card-content>
                   <div class="stat-label">Aktuelle Messung</div>
@@ -128,13 +153,13 @@ import { Entry } from '../../models/entries';
                   <div class="stat-unit">kg</div>
                 </mat-card-content>
               </mat-card>
-            </div>
+            </div> -->
           }
         </mat-card-content>
       </mat-card>
 
       <!-- Sport Tracking -->
-      <mat-card class="section-card">
+      <!-- <mat-card class="section-card">
         <mat-card-title>🏃 Sportaktivitäten</mat-card-title>
         <mat-card-content>
           @if (sportCount() === 0) {
@@ -169,7 +194,7 @@ import { Entry } from '../../models/entries';
             </div>
           }
         </mat-card-content>
-      </mat-card>
+      </mat-card> -->
 
       <!-- Food Log -->
       <mat-card class="section-card">
@@ -182,7 +207,7 @@ import { Entry } from '../../models/entries';
             </div>
           }
           @if (foodCount() > 0) {
-            <div class="food-count-badge">
+            <div class="food-count-badge" (click)="showFoodLog()">
               <mat-icon>check_circle</mat-icon>
               <span>{{ foodCount() }} Lebensmitteleinträge in diesem Zeitraum</span>
             </div>
@@ -476,28 +501,22 @@ export class AnalyticsComponent {
     return this.storageService.getEntriesInRange(startDate, today);
   });
 
-  foodEntries = computed(() =>
-    this.periodEntries().filter(e => e.type === 'food')
-  );
+  foodEntries = computed(() => this.periodEntries().filter((e) => e.type === 'food'));
 
   weightEntries = computed(() =>
     this.periodEntries()
-      .filter(e => e.type === 'weight')
-      .sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      )
+      .filter((e) => e.type === 'weight')
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
   );
 
-  sportEntries = computed(() =>
-    this.periodEntries().filter(e => e.type === 'sport')
-  );
+  sportEntries = computed(() => this.periodEntries().filter((e) => e.type === 'sport'));
 
   foodCount = computed(() => this.foodEntries().length);
   weightCount = computed(() => this.weightEntries().length);
   sportCount = computed(() => this.sportEntries().length);
 
   dailyNutrition = computed(() => {
-    const entries = this.foodEntries().map(e => ({
+    const entries = this.foodEntries().map((e) => ({
       nutrition: (e as any).nutrition,
     }));
     return this.nutritionService.calculateDailyTotals(entries);
@@ -505,7 +524,7 @@ export class AnalyticsComponent {
 
   getSortedWeightEntries(): any[] {
     return [...(this.weightEntries() as any[])].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }
 
@@ -544,8 +563,8 @@ export class AnalyticsComponent {
     const chartWidth = 420;
     const chartHeight = 180;
     const padding = 18;
-    const minWeight = Math.min(...entries.map(e => e.weight));
-    const maxWeight = Math.max(...entries.map(e => e.weight));
+    const minWeight = Math.min(...entries.map((e) => e.weight));
+    const maxWeight = Math.max(...entries.map((e) => e.weight));
     const range = maxWeight - minWeight || 1;
 
     return entries.map((entry, index) => {
@@ -597,10 +616,7 @@ export class AnalyticsComponent {
   }
 
   getTotalSportDuration(): number {
-    return (this.sportEntries() as any[]).reduce(
-      (acc, e) => acc + e.duration,
-      0
-    );
+    return (this.sportEntries() as any[]).reduce((acc, e) => acc + e.duration, 0);
   }
 
   getTotalCaloriesBurned(): number {
@@ -621,4 +637,9 @@ export class AnalyticsComponent {
     };
     return labels[period];
   }
+
+  /**
+   * hier wird ein popup aufgerufen in dem alle eintraege aus dem gewaehlten Zeitraum angezeigt werden
+   */
+  showFoodLog() {}
 }
