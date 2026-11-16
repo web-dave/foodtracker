@@ -80,6 +80,11 @@ import { BloodPressureEntry } from '../../models/entries';
               placeholder="z.B. Nach dem Sport, Morgens..."
             />
           </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Uhrzeit</mat-label>
+            <input matInput [(ngModel)]="entryTime" type="time" />
+          </mat-form-field>
         </div>
       </mat-card-content>
 
@@ -167,6 +172,7 @@ export class BloodPressureInputComponent implements OnInit {
   diastolic = signal<number | null>(null);
   heartRate = signal<number | null>(null);
   notes = signal<string>('');
+  entryTime = this.getCurrentTime();
 
   ngOnInit(): void {
     const initialEntry = this.entry();
@@ -175,6 +181,7 @@ export class BloodPressureInputComponent implements OnInit {
       this.diastolic.set(initialEntry.diastolic);
       this.heartRate.set(initialEntry.heartRate ?? null);
       this.notes.set(initialEntry.notes ?? '');
+      this.entryTime = this.formatTime(new Date(initialEntry.timestamp));
     }
   }
 
@@ -187,7 +194,7 @@ export class BloodPressureInputComponent implements OnInit {
 
     const entry: Omit<BloodPressureEntry, 'id'> = {
       type: 'blood-pressure',
-      timestamp: this.entry()?.timestamp ?? new Date(),
+      timestamp: this.buildTimestamp(this.entry()?.timestamp),
       systolic: this.systolic()!,
       diastolic: this.diastolic()!,
     };
@@ -206,5 +213,27 @@ export class BloodPressureInputComponent implements OnInit {
     this.diastolic.set(null);
     this.heartRate.set(null);
     this.notes.set('');
+    this.entryTime = this.getCurrentTime();
+  }
+
+  private buildTimestamp(baseDate: Date | undefined): Date {
+    const timestamp = baseDate ? new Date(baseDate) : new Date();
+    const [hours, minutes] = this.entryTime.split(':').map(Number);
+
+    if (Number.isInteger(hours) && Number.isInteger(minutes)) {
+      timestamp.setHours(hours, minutes, 0, 0);
+    }
+
+    return timestamp;
+  }
+
+  private formatTime(date: Date): string {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  private getCurrentTime(): string {
+    return this.formatTime(new Date());
   }
 }

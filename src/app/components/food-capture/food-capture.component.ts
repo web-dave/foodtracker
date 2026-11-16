@@ -254,6 +254,11 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
               ></textarea>
             </mat-form-field>
 
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Uhrzeit</mat-label>
+              <input matInput [(ngModel)]="entryTime" type="time" />
+            </mat-form-field>
+
             <!-- Save Button -->
             <button
               mat-raised-button
@@ -525,6 +530,7 @@ export class FoodCaptureComponent implements OnInit {
   mealType: MealType = 'lunch';
   mealNumber: number | null = 1;
   totalMeals: number | null = null;
+  entryTime = this.getCurrentTime();
 
   foodEntryCreated = output<FoodEntry>();
 
@@ -542,6 +548,7 @@ export class FoodCaptureComponent implements OnInit {
     this.nutrition.set(initialEntry.nutrition ?? null);
     this.capturedImage.set(initialEntry.imageUrl ?? null);
     this.uploadedImage.set(null);
+    this.entryTime = this.formatTime(new Date(initialEntry.timestamp));
   }
 
   canSave() {
@@ -634,7 +641,7 @@ export class FoodCaptureComponent implements OnInit {
     const entry: FoodEntry = {
       id: this.entry()?.id ?? Date.now().toString(),
       type: 'food',
-      timestamp: this.entry()?.timestamp ?? new Date(),
+      timestamp: this.buildTimestamp(this.entry()?.timestamp),
       imageUrl: this.capturedImage() || this.uploadedImage() || this.entry()?.imageUrl || undefined,
       description: this.description || `${this.foodName} ${this.foodQuantity}`.trim(),
       mealType: this.mealType,
@@ -664,5 +671,27 @@ export class FoodCaptureComponent implements OnInit {
     this.mealType = 'lunch';
     this.mealNumber = 1;
     this.totalMeals = null;
+    this.entryTime = this.getCurrentTime();
+  }
+
+  private buildTimestamp(baseDate: Date | undefined): Date {
+    const timestamp = baseDate ? new Date(baseDate) : new Date();
+    const [hours, minutes] = this.entryTime.split(':').map(Number);
+
+    if (Number.isInteger(hours) && Number.isInteger(minutes)) {
+      timestamp.setHours(hours, minutes, 0, 0);
+    }
+
+    return timestamp;
+  }
+
+  private formatTime(date: Date): string {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  private getCurrentTime(): string {
+    return this.formatTime(new Date());
   }
 }

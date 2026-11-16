@@ -11,23 +11,27 @@ export class StorageService {
   readonly entries$ = this.entries.asReadonly();
 
   getEntries(): Entry[] {
-    return this.entries();
+    return this.sortEntriesByTimestamp(this.entries());
   }
 
   getEntriesByDate(date: Date): Entry[] {
     const dateStr = this.formatDate(date);
-    return this.entries().filter(
-      entry => this.formatDate(new Date(entry.timestamp)) === dateStr
+    return this.sortEntriesByTimestamp(
+      this.entries().filter(
+        entry => this.formatDate(new Date(entry.timestamp)) === dateStr
+      )
     );
   }
 
   getEntriesInRange(startDate: Date, endDate: Date): Entry[] {
     const start = startDate.getTime();
     const end = endDate.getTime();
-    return this.entries().filter(entry => {
-      const time = new Date(entry.timestamp).getTime();
-      return time >= start && time <= end;
-    });
+    return this.sortEntriesByTimestamp(
+      this.entries().filter(entry => {
+        const time = new Date(entry.timestamp).getTime();
+        return time >= start && time <= end;
+      })
+    );
   }
 
   addEntry(entry: Omit<Entry, 'id'>): Entry {
@@ -95,5 +99,11 @@ export class StorageService {
 
   private formatDate(date: Date): string {
     return date.toISOString().split('T')[0];
+  }
+
+  private sortEntriesByTimestamp(entries: Entry[]): Entry[] {
+    return [...entries].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   }
 }
