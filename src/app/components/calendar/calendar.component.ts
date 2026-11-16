@@ -629,14 +629,16 @@ export class CalendarComponent {
 
   getEntriesForDay(date: Date): Entry[] {
     const entries = this.storageService.getEntries();
-    return entries.filter(entry => {
-      const entryDate = new Date(entry.timestamp);
-      return (
-        entryDate.getDate() === date.getDate() &&
-        entryDate.getMonth() === date.getMonth() &&
-        entryDate.getFullYear() === date.getFullYear()
-      );
-    });
+    return entries
+      .filter(entry => {
+        const entryDate = new Date(entry.timestamp);
+        return (
+          entryDate.getDate() === date.getDate() &&
+          entryDate.getMonth() === date.getMonth() &&
+          entryDate.getFullYear() === date.getFullYear()
+        );
+      })
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }
 
   getDayTooltip(date: Date): string {

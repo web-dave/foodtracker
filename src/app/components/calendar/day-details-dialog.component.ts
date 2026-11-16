@@ -482,19 +482,19 @@ export class DayDetailsDialogComponent {
   data = inject(MAT_DIALOG_DATA) as DayDetailsData;
 
   foodEntries() {
-    return this.data.entries.filter(e => e.type === 'food');
+    return this.sortedEntries().filter(e => e.type === 'food');
   }
 
   weightEntries() {
-    return this.data.entries.filter(e => e.type === 'weight');
+    return this.sortedEntries().filter(e => e.type === 'weight');
   }
 
   sportEntries() {
-    return this.data.entries.filter(e => e.type === 'sport');
+    return this.sortedEntries().filter(e => e.type === 'sport');
   }
 
   bloodPressureEntries() {
-    return this.data.entries.filter(e => e.type === 'blood-pressure');
+    return this.sortedEntries().filter(e => e.type === 'blood-pressure');
   }
 
   formatDate(date: Date): string {
@@ -526,5 +526,11 @@ export class DayDetailsDialogComponent {
       high: 'Hoch',
     };
     return labels[intensity] || intensity;
+  }
+
+  private sortedEntries(): Entry[] {
+    return [...this.data.entries].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   }
 }

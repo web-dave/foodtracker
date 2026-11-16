@@ -61,6 +61,11 @@ import { WeightEntry } from '../../models/entries';
             />
           </mat-form-field>
 
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Uhrzeit</mat-label>
+            <input matInput [(ngModel)]="entryTime" type="time" />
+          </mat-form-field>
+
           <button
             mat-raised-button
             color="accent"
@@ -158,6 +163,7 @@ export class WeightInputComponent implements OnInit {
   weight = 0;
   unit: 'kg' | 'lbs' = 'kg';
   notes = '';
+  entryTime = this.getCurrentTime();
 
   ngOnInit(): void {
     const initialEntry = this.entry();
@@ -165,6 +171,7 @@ export class WeightInputComponent implements OnInit {
       this.weight = initialEntry.weight;
       this.unit = initialEntry.unit;
       this.notes = initialEntry.notes ?? '';
+      this.entryTime = this.formatTime(new Date(initialEntry.timestamp));
     }
   }
 
@@ -173,7 +180,7 @@ export class WeightInputComponent implements OnInit {
 
     const entry: Omit<WeightEntry, 'id'> = {
       type: 'weight',
-      timestamp: this.entry()?.timestamp ?? new Date(),
+      timestamp: this.buildTimestamp(this.entry()?.timestamp),
       weight: this.weight,
       unit: this.unit,
       notes: this.notes || undefined,
@@ -186,5 +193,27 @@ export class WeightInputComponent implements OnInit {
   private reset(): void {
     this.weight = 0;
     this.notes = '';
+    this.entryTime = this.getCurrentTime();
+  }
+
+  private buildTimestamp(baseDate: Date | undefined): Date {
+    const timestamp = baseDate ? new Date(baseDate) : new Date();
+    const [hours, minutes] = this.entryTime.split(':').map(Number);
+
+    if (Number.isInteger(hours) && Number.isInteger(minutes)) {
+      timestamp.setHours(hours, minutes, 0, 0);
+    }
+
+    return timestamp;
+  }
+
+  private formatTime(date: Date): string {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  private getCurrentTime(): string {
+    return this.formatTime(new Date());
   }
 }
