@@ -90,6 +90,8 @@ interface NavItem {
     }
 
     .mobile-toolbar {
+      position: sticky;
+      top: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -162,7 +164,7 @@ interface NavItem {
 
     .main-content {
       flex: 1;
-      overflow-y: auto;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       background: #f5f5f5;
@@ -181,7 +183,7 @@ interface NavItem {
 
     /* Mobile Bottom Navigation */
     .mobile-bottom-nav {
-      position: absolute;
+      position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
@@ -189,6 +191,9 @@ interface NavItem {
       height: 56px;
       border-top: 1px solid rgba(0, 0, 0, 0.12);
       box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 20;
+      background: white;
+      width: 100%;
 
       @media (min-width: 768px) {
         display: none;
