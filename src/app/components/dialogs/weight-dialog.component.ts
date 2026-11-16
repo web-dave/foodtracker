@@ -16,6 +16,9 @@ import { WeightEntry } from '../../models/entries';
     <mat-dialog-content>
       <app-weight-input [entry]="entry" (weightAdded)="onWeightAdded($event)" />
     </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Abbrechen</button>
+    </mat-dialog-actions>
   `,
   styles: `
     mat-dialog-content {

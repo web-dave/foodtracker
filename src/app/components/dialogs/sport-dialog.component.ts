@@ -16,6 +16,9 @@ import { SportEntry } from '../../models/entries';
     <mat-dialog-content>
       <app-sport-input [entry]="entry" (sportAdded)="onSportAdded($event)" />
     </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Abbrechen</button>
+    </mat-dialog-actions>
   `,
   styles: `
     mat-dialog-content {
