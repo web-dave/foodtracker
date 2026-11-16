@@ -71,12 +71,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
         <!-- Camera Mode -->
         @if (mode === 'camera') {
           <div class="camera-section">
-            <video
-              #videoElement
-              autoplay
-              playsinline
-              class="video-feed"
-            ></video>
+            <video #videoElement autoplay playsinline class="video-feed"></video>
             <div class="button-group">
               <button
                 mat-raised-button
@@ -96,11 +91,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
                 <mat-icon>photo_camera</mat-icon>
                 Foto machen
               </button>
-              <button
-                mat-raised-button
-                (click)="stopCamera()"
-                [disabled]="!cameraActive()"
-              >
+              <button mat-raised-button (click)="stopCamera()" [disabled]="!cameraActive()">
                 <mat-icon>videocam_off</mat-icon>
                 Kamera stoppen
               </button>
@@ -118,11 +109,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
               (change)="handleFileUpload($event)"
               style="display: none"
             />
-            <button
-              mat-raised-button
-              color="primary"
-              (click)="fileInput.click()"
-            >
+            <button mat-raised-button color="primary" (click)="fileInput.click()">
               <mat-icon>cloud_upload</mat-icon>
               Bild hochladen
             </button>
@@ -134,20 +121,12 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
           <div class="manual-entry-section">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Lebensmittel / Gericht</mat-label>
-              <input
-                matInput
-                [(ngModel)]="foodName"
-                placeholder="z.B. Hähnchenbrust mit Reis"
-              />
+              <input matInput [(ngModel)]="foodName" placeholder="z.B. Hähnchenbrust mit Reis" />
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Menge</mat-label>
-              <input
-                matInput
-                [(ngModel)]="foodQuantity"
-                placeholder="z.B. 150g, 1 Portion"
-              />
+              <input matInput [(ngModel)]="foodQuantity" placeholder="z.B. 150g, 1 Portion" />
             </mat-form-field>
           </div>
         }
@@ -164,7 +143,7 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
             }
 
             <div class="button-group">
-              <button
+              <!-- <button
                 mat-raised-button
                 color="primary"
                 (click)="analyzeFood()"
@@ -184,12 +163,8 @@ import { NutritionAnalysisService } from '../../services/nutrition-analysis.serv
                     Analysieren
                   </ng-container>
                 }
-              </button>
-              <button
-                mat-raised-button
-                (click)="resetCapture()"
-                [disabled]="isAnalyzing()"
-              >
+              </button> -->
+              <button mat-raised-button (click)="resetCapture()" [disabled]="isAnalyzing()">
                 <mat-icon>close</mat-icon>
                 Zurücksetzen
               </button>
@@ -612,10 +587,9 @@ export class FoodCaptureComponent implements OnInit {
 
   stopCamera(): void {
     if (this.videoElement) {
-      const stream = this.videoElement.nativeElement
-        .srcObject as MediaStream;
+      const stream = this.videoElement.nativeElement.srcObject as MediaStream;
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       }
       this.cameraActive.set(false);
     }
@@ -633,30 +607,28 @@ export class FoodCaptureComponent implements OnInit {
     }
   }
 
-  async analyzeFood(): Promise<void> {
-    this.isAnalyzing.set(true);
+  // async analyzeFood(): Promise<void> {
+  //   this.isAnalyzing.set(true);
 
-    try {
-      const imageUrl = this.capturedImage() || this.uploadedImage();
+  //   try {
+  //     const imageUrl = this.capturedImage() || this.uploadedImage();
 
-      if (imageUrl && this.mode !== 'manual') {
-        const result = await this.nutritionService.analyzeFoodImage(imageUrl);
-        this.nutrition.set(result);
-      } else if (this.mode === 'manual' && this.foodName) {
-        const result = await this.nutritionService.analyzeFoodImage(
-          this.foodName
-        );
-        this.nutrition.set(result);
-      }
-    } catch (error) {
-      console.error('Analysefehler:', error);
-      this.snackBar.open('Analyse konnte nicht durchgeführt werden', 'OK', {
-        duration: 3000,
-      });
-    } finally {
-      this.isAnalyzing.set(false);
-    }
-  }
+  //     if (imageUrl && this.mode !== 'manual') {
+  //       const result = await this.nutritionService.analyzeFoodImage(imageUrl);
+  //       this.nutrition.set(result);
+  //     } else if (this.mode === 'manual' && this.foodName) {
+  //       const result = await this.nutritionService.analyzeFoodImage(this.foodName);
+  //       this.nutrition.set(result);
+  //     }
+  //   } catch (error) {
+  //     console.error('Analysefehler:', error);
+  //     this.snackBar.open('Analyse konnte nicht durchgeführt werden', 'OK', {
+  //       duration: 3000,
+  //     });
+  //   } finally {
+  //     this.isAnalyzing.set(false);
+  //   }
+  // }
 
   saveFoodEntry(): void {
     const entry: FoodEntry = {
@@ -668,12 +640,13 @@ export class FoodCaptureComponent implements OnInit {
       mealType: this.mealType,
       mealNumber: this.mealNumber ?? undefined,
       totalMeals: this.totalMeals ?? undefined,
-      nutrition: this.nutrition() || this.entry()?.nutrition || {
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-      },
+      nutrition: this.nutrition() ||
+        this.entry()?.nutrition || {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+        },
     };
 
     this.foodEntryCreated.emit(entry);
