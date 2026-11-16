@@ -29,11 +29,8 @@ interface FoodLogDialogData {
                   <span>{{ getMealTypeLabel(entry.mealType) }}</span>
                 </div>
                 <p class="entry-description">{{ entry.description || 'Ohne Beschreibung' }}</p>
-                @if (entry.nutrition) {
-                  <p class="nutrition-line">
-                    {{ entry.nutrition.calories }} kcal · {{ entry.nutrition.protein }}g Protein ·
-                    {{ entry.nutrition.carbs }}g Kohlenhydrate · {{ entry.nutrition.fat }}g Fett
-                  </p>
+                @if (entry.nutrition && getNutritionSummary(entry)) {
+                  <p class="nutrition-line">{{ getNutritionSummary(entry) }}</p>
                 }
               </mat-card-content>
             </mat-card>
@@ -124,5 +121,21 @@ export class FoodLogDialogComponent {
       snack: 'Snack',
     };
     return labels[type];
+  }
+
+  getNutritionSummary(entry: FoodEntry): string {
+    const nutrition = entry.nutrition;
+    if (!nutrition) {
+      return '';
+    }
+
+    const parts = [
+      nutrition.calories && nutrition.calories > 0 ? `${nutrition.calories} kcal` : null,
+      nutrition.protein && nutrition.protein > 0 ? `${nutrition.protein}g Protein` : null,
+      nutrition.carbs && nutrition.carbs > 0 ? `${nutrition.carbs}g Kohlenhydrate` : null,
+      nutrition.fat && nutrition.fat > 0 ? `${nutrition.fat}g Fett` : null,
+    ].filter((part): part is string => Boolean(part));
+
+    return parts.join(' · ');
   }
 }
