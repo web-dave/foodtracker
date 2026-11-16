@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { StorageService } from '../../services/storage.service';
 import { NutritionAnalysisService } from '../../services/nutrition-analysis.service';
 import { Entry } from '../../models/entries';
+import { FoodEntry } from '../../models/entries';
+import { FoodLogDialogComponent } from '../dialogs/food-log-dialog.component';
 
 @Component({
   selector: 'app-analytics',
@@ -207,10 +210,15 @@ import { Entry } from '../../models/entries';
             </div>
           }
           @if (foodCount() > 0) {
-            <div class="food-count-badge" (click)="showFoodLog()">
+            <button
+              type="button"
+              class="food-count-badge"
+              (click)="showFoodLog()"
+              aria-label="Lebensmittelprotokoll für den gewählten Zeitraum anzeigen"
+            >
               <mat-icon>check_circle</mat-icon>
               <span>{{ foodCount() }} Lebensmitteleinträge in diesem Zeitraum</span>
-            </div>
+            </button>
           }
         </mat-card-content>
       </mat-card>
@@ -430,12 +438,16 @@ import { Entry } from '../../models/entries';
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
       gap: 12px;
       padding: 20px;
       background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
       border-radius: 8px;
       color: white;
       font-weight: 500;
+      border: none;
+      cursor: pointer;
+      text-align: center;
 
       mat-icon {
         color: white;
@@ -481,6 +493,7 @@ import { Entry } from '../../models/entries';
 export class AnalyticsComponent {
   private storageService = inject(StorageService);
   private nutritionService = inject(NutritionAnalysisService);
+  private dialog = inject(MatDialog);
 
   selectedPeriod = signal<'day' | 'week' | 'month'>('day');
   periodOptions: Array<'day' | 'week' | 'month'> = ['day', 'week', 'month'];
@@ -641,5 +654,14 @@ export class AnalyticsComponent {
   /**
    * hier wird ein popup aufgerufen in dem alle eintraege aus dem gewaehlten Zeitraum angezeigt werden
    */
-  showFoodLog() {}
+  showFoodLog(): void {
+    this.dialog.open(FoodLogDialogComponent, {
+      width: '100%',
+      maxWidth: '680px',
+      data: {
+        entries: this.foodEntries() as FoodEntry[],
+        periodLabel: this.getPeriodLabel(this.selectedPeriod()),
+      },
+    });
+  }
 }
