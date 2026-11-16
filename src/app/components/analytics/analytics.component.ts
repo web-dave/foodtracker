@@ -94,6 +94,12 @@ import { Entry } from '../../models/entries';
                 @for (point of getWeightChartPoints(); track point.x; let i = $index) {
                   <circle class="weight-chart-point" [attr.cx]="point.x" [attr.cy]="point.y" r="4"></circle>
                 }
+                @for (label of getWeightChartDateLabels(); track label.x) {
+                  <text class="weight-chart-date-label" [attr.x]="label.x" [attr.y]="label.y" text-anchor="middle">{{ label.text }}</text>
+                }
+                @for (label of getWeightChartValueLabels(); track label.x) {
+                  <text class="weight-chart-value-label" [attr.x]="label.x" [attr.y]="label.y" text-anchor="middle">{{ label.text }}</text>
+                }
               </svg>
             </div>
             <div class="weight-loss-summary">
@@ -361,6 +367,18 @@ import { Entry } from '../../models/entries';
       stroke-width: 2;
     }
 
+    .weight-chart-date-label,
+    .weight-chart-value-label {
+      fill: #4a5568;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .weight-chart-value-label {
+      fill: #2d3748;
+      font-weight: 700;
+    }
+
     .weight-loss-summary {
       display: flex;
       align-items: center;
@@ -539,6 +557,35 @@ export class AnalyticsComponent {
       const y = chartHeight - padding - normalized * (chartHeight - padding * 2);
       return { x, y };
     });
+  }
+
+  getWeightChartDateLabels(): Array<{ x: number; y: number; text: string }> {
+    const entries = this.getSortedWeightEntries();
+    if (entries.length === 0) return [];
+
+    const points = this.getWeightChartPoints();
+    const chartHeight = 180;
+    const bottomY = chartHeight - 4;
+
+    return points.map((point, index) => {
+      const date = new Date(entries[index].timestamp);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return { x: point.x, y: bottomY, text: `${day}.${month}` };
+    });
+  }
+
+  getWeightChartValueLabels(): Array<{ x: number; y: number; text: string }> {
+    const entries = this.getSortedWeightEntries();
+    if (entries.length === 0) return [];
+
+    const points = this.getWeightChartPoints();
+
+    return points.map((point, index) => ({
+      x: point.x,
+      y: point.y - 8,
+      text: `${entries[index].weight.toFixed(1).replace('.', ',')} kg`,
+    }));
   }
 
   getWeightChartPath(): string {
