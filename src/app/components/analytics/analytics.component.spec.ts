@@ -1,6 +1,8 @@
 import '@angular/compiler';
 import { describe, expect, it } from 'vitest';
+import { vi } from 'vitest';
 import { AnalyticsComponent } from './analytics.component';
+import { FoodEntry } from '../../models/entries';
 
 describe('AnalyticsComponent', () => {
   it('sorts weight entries chronologically and calculates the loss summary', () => {
@@ -23,5 +25,29 @@ describe('AnalyticsComponent', () => {
     expect(component.getWeightChartPoints().length).toBe(3);
     expect(component.getWeightChartDateLabels().map(label => label.text)).toEqual(['10.01', '14.01', '20.01']);
     expect(component.getWeightChartValueLabels().map(label => label.text)).toEqual(['87,5 kg', '84,5 kg', '82,5 kg']);
+  });
+
+  it('opens the food log dialog with selected period entries', () => {
+    const component = Object.create(AnalyticsComponent.prototype) as AnalyticsComponent & {
+      dialog: { open: ReturnType<typeof vi.fn> };
+      foodEntries: () => FoodEntry[];
+      selectedPeriod: () => 'day' | 'week' | 'month';
+    };
+
+    const dialogOpen = vi.fn();
+    const entries: FoodEntry[] = [
+      { id: 'f1', type: 'food', timestamp: new Date('2024-01-14T08:00:00Z'), description: 'Haferflocken', mealType: 'breakfast' },
+    ];
+
+    component.dialog = { open: dialogOpen };
+    component.foodEntries = () => entries;
+    component.selectedPeriod = () => 'week';
+
+    component.showFoodLog();
+
+    expect(dialogOpen).toHaveBeenCalledTimes(1);
+    const [, config] = dialogOpen.mock.calls[0];
+    expect(config.data.entries).toBe(entries);
+    expect(config.data.periodLabel).toBe('Diese Woche');
   });
 });
