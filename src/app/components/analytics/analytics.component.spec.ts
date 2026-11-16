@@ -2,6 +2,7 @@ import '@angular/compiler';
 import { describe, expect, it } from 'vitest';
 import { vi } from 'vitest';
 import { AnalyticsComponent } from './analytics.component';
+import { FoodLogDialogComponent } from '../dialogs/food-log-dialog.component';
 import { FoodEntry } from '../../models/entries';
 
 describe('AnalyticsComponent', () => {
@@ -49,5 +50,37 @@ describe('AnalyticsComponent', () => {
     const [, config] = dialogOpen.mock.calls[0];
     expect(config.data.entries).toBe(entries);
     expect(config.data.periodLabel).toBe('Diese Woche');
+  });
+
+  it('hides zero and null nutrition values in the food log dialog', () => {
+    const component = Object.create(FoodLogDialogComponent.prototype) as FoodLogDialogComponent;
+
+    const entry: FoodEntry = {
+      id: 'f1',
+      type: 'food',
+      timestamp: new Date('2024-01-14T08:00:00Z'),
+      description: 'Haferflocken',
+      mealType: 'breakfast',
+      nutrition: {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: null as unknown as number,
+      },
+    };
+
+    expect(component.getNutritionSummary(entry)).toBe('');
+
+    const entryWithValues: FoodEntry = {
+      ...entry,
+      nutrition: {
+        calories: 320,
+        protein: 12,
+        carbs: 40,
+        fat: 6,
+      },
+    };
+
+    expect(component.getNutritionSummary(entryWithValues)).toBe('320 kcal · 12g Protein · 40g Kohlenhydrate · 6g Fett');
   });
 });
