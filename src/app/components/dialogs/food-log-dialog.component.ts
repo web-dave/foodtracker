@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { FoodEntry } from '../../models/entries';
+import { MatIcon } from '@angular/material/icon';
 
 interface FoodLogDialogData {
   entries: FoodEntry[];
@@ -12,7 +13,7 @@ interface FoodLogDialogData {
 
 @Component({
   selector: 'app-food-log-dialog',
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatCardModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatCardModule, MatIcon],
   template: `
     <h2 mat-dialog-title>🍽️ Lebensmittelprotokoll – {{ data.periodLabel }}</h2>
 
@@ -40,7 +41,7 @@ interface FoodLogDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Schließen</button>
+      <mat-icon mat-dialog-close>delete</mat-icon>
     </mat-dialog-actions>
   `,
   styles: `
