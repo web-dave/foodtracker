@@ -21,5 +21,7 @@ describe('AnalyticsComponent', () => {
     expect(component.getWeightLossText()).toBe('5,0 kg verloren');
     expect(component.getWeightChartPath()).toContain('M');
     expect(component.getWeightChartPoints().length).toBe(3);
+    expect(component.getWeightChartDateLabels().map(label => label.text)).toEqual(['10.01', '14.01', '20.01']);
+    expect(component.getWeightChartValueLabels().map(label => label.text)).toEqual(['87,5 kg', '84,5 kg', '82,5 kg']);
   });
 });
