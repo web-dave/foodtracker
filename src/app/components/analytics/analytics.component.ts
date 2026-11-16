@@ -88,6 +88,18 @@ import { Entry } from '../../models/entries';
             </div>
           }
           @if (weightCount() > 0) {
+            <div class="weight-chart-wrapper" aria-label="Gewichtsverlauf Diagramm">
+              <svg class="weight-chart" viewBox="0 0 420 180" preserveAspectRatio="none" role="img" aria-label="Gewichtsverlauf">
+                <path class="weight-chart-line" [attr.d]="getWeightChartPath()"></path>
+                @for (point of getWeightChartPoints(); track point.x; let i = $index) {
+                  <circle class="weight-chart-point" [attr.cx]="point.x" [attr.cy]="point.y" r="4"></circle>
+                }
+              </svg>
+            </div>
+            <div class="weight-loss-summary">
+              <span class="weight-loss-label">Gewichtsverlust</span>
+              <span class="weight-loss-value">{{ getWeightLossText() }}</span>
+            </div>
             <div class="stats-grid">
               <mat-card class="stat-card stat-card-1">
                 <mat-card-content>
@@ -322,6 +334,55 @@ import { Entry } from '../../models/entries';
       }
     }
 
+    .weight-chart-wrapper {
+      margin: 0 0 18px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+      padding: 12px;
+    }
+
+    .weight-chart {
+      width: 100%;
+      height: 180px;
+      display: block;
+    }
+
+    .weight-chart-line {
+      fill: none;
+      stroke: #667eea;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .weight-chart-point {
+      fill: #667eea;
+      stroke: white;
+      stroke-width: 2;
+    }
+
+    .weight-loss-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      border-radius: 10px;
+      background: rgba(76, 175, 80, 0.08);
+      border: 1px solid rgba(76, 175, 80, 0.12);
+      color: #1b5e20;
+      font-weight: 600;
+    }
+
+    .weight-loss-label {
+      opacity: 0.8;
+    }
+
+    .weight-loss-value {
+      font-size: 1.05rem;
+    }
+
     .food-count-badge {
       display: flex;
       align-items: center;
@@ -402,7 +463,11 @@ export class AnalyticsComponent {
   );
 
   weightEntries = computed(() =>
-    this.periodEntries().filter(e => e.type === 'weight')
+    this.periodEntries()
+      .filter(e => e.type === 'weight')
+      .sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
   );
 
   sportEntries = computed(() =>
@@ -420,25 +485,68 @@ export class AnalyticsComponent {
     return this.nutritionService.calculateDailyTotals(entries);
   });
 
+  getSortedWeightEntries(): any[] {
+    return [...(this.weightEntries() as any[])].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }
+
   getLatestWeight(): number {
-    const entries = this.weightEntries() as any[];
+    const entries = this.getSortedWeightEntries();
     if (entries.length === 0) return 0;
     return entries[entries.length - 1].weight;
   }
 
   getAverageWeight(): number {
-    const entries = this.weightEntries() as any[];
+    const entries = this.getSortedWeightEntries();
     if (entries.length === 0) return 0;
     const sum = entries.reduce((acc, e) => acc + e.weight, 0);
     return Math.round((sum / entries.length) * 10) / 10;
   }
 
   getWeightDifference(): number {
-    const entries = this.weightEntries() as any[];
+    const entries = this.getSortedWeightEntries();
     if (entries.length < 2) return 0;
     const latest = entries[entries.length - 1].weight;
     const oldest = entries[0].weight;
     return Math.round((latest - oldest) * 10) / 10;
+  }
+
+  getWeightLossText(): string {
+    const difference = this.getWeightDifference();
+    if (difference === 0) return '0,0 kg';
+    if (difference > 0) return `${difference.toFixed(1).replace('.', ',')} kg zugenommen`;
+    return `${Math.abs(difference).toFixed(1).replace('.', ',')} kg verloren`;
+  }
+
+  getWeightChartPoints(): Array<{ x: number; y: number }> {
+    const entries = this.getSortedWeightEntries();
+    if (entries.length === 0) return [];
+
+    const chartWidth = 420;
+    const chartHeight = 180;
+    const padding = 18;
+    const minWeight = Math.min(...entries.map(e => e.weight));
+    const maxWeight = Math.max(...entries.map(e => e.weight));
+    const range = maxWeight - minWeight || 1;
+
+    return entries.map((entry, index) => {
+      const x =
+        entries.length === 1
+          ? chartWidth / 2
+          : padding + (index / (entries.length - 1)) * (chartWidth - padding * 2);
+      const normalized = (entry.weight - minWeight) / range;
+      const y = chartHeight - padding - normalized * (chartHeight - padding * 2);
+      return { x, y };
+    });
+  }
+
+  getWeightChartPath(): string {
+    const points = this.getWeightChartPoints();
+    if (points.length === 0) return '';
+    return points
+      .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+      .join(' ');
   }
 
   getTotalSportDuration(): number {
